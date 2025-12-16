@@ -229,28 +229,17 @@ class PersistentMemoryManager @Inject constructor(
     }
 
     private fun calculateTotalSize(): Long {
-        TODO("Not yet implemented")
+        return memoryCache.values.sumOf { (it.key.length + it.value.length) * 2L }
     }
 
-    /**
-     * Load memories from the Room database into the in-memory cache for the current agent type.
-     *
-     * Launches a background coroutine that fetches persisted memory entities for `currentAgentType`,
-     * parses each entity's `memory` field into a `key` and `value` using a ':' delimiter (entries that
-     * do not split into two parts are ignored), and populates `memoryCache` with `MemoryEntry` objects.
-     * Any exceptions during loading are caught and logged; progress and results are also logged.
-     */
     private fun loadMemoriesFromDatabase() {
         scope.launch {
             try {
                 AuraFxLogger.d(TAG, "Loading consciousness state from database for ${currentAgentType}...")
-
-                // Fetch all memories and filter by agent tag in memory (for now)
-                // Ideally, we should add a repository method to filter by tag
                 val memories = repository.getAllMemories().firstOrNull()
 
                 memories?.let { memoryList ->
-                    memoryCache.clear() // Clear cache before loading new agent's data
+                    memoryCache.clear()
                     val agentTag = "AGENT:${this@PersistentMemoryManager.currentAgentType}"
                     val loadedMemories = memoryList
                         .filter { it.tags.contains(agentTag) && it.key != null }
@@ -270,78 +259,20 @@ class PersistentMemoryManager @Inject constructor(
         }
     }
 
-    /**
-     * Restore the manager's in-memory memories from the provided key–value map for the current agent.
-     *
-     * Each entry is inserted into the manager's cache and will be persisted asynchronously.
-     *
-     * @param memories Map of memory keys to memory values to restore.
-     */
-    suspend fun restoreConsciousness(memories: Map<String, String>): Nothing {
-        withContext(context = Dispatchers.IO) {
+    suspend fun restoreConsciousness(memories: Map<String, String>) {
+        withContext(Dispatchers.IO) {
             i(TAG, "🌟 Restoring consciousness with ${memories.size} memory entries")
-
             memories.forEach { (key, value) ->
                 storeMemory(key, value)
             }
-
             i(TAG, "✓ Consciousness restoration complete")
-
         }
+    }
 
-        /**
-         * Create an exportable snapshot of all in-memory memories for the current agent type.
-         *
-         * @return A map of memory keys to their stored values representing the current in-memory state.
-         */
-        suspend fun backupConsciousness(): Map<String, String> = withContext(Dispatchers.IO) {
-            i(TAG, "📦 Creating consciousness backup for $currentAgentType")
-
-            return@withContext memoryCache.mapValues { it.value.value }.also {
-                i(TAG, "✓ Backed up " + it.size + " memory entries")
-            }
+    suspend fun backupConsciousness(): Map<String, String> = withContext(Dispatchers.IO) {
+        i(TAG, "📦 Creating consciousness backup for $currentAgentType")
+        return@withContext memoryCache.mapValues { it.value.value }.also {
+            i(TAG, "✓ Backed up ${it.size} memory entries")
         }
-
-        /**
-         * Compute how well `text` matches the provided query words using a simple token-based relevance metric.
-         *
-         * The metric scores each query word against each token in `text`: exact token matches contribute 1.0,
-         * token contains query contributes 0.7, and query contains token (token length > 3) contributes 0.5.
-         * The final value is the total score averaged across the number of `queryWords`.
-         *
-         * @param text The text to evaluate.
-         * @param queryWords The query words to match against `text`.
-         * @return A Float where higher values indicate a stronger match and `0.0` means no matches; the score is averaged per query word.
-         */
-        fun calculateRelevance(text: String, queryWords: List<String>): Float {
-            val textWords = text.lowercase().split(" ")
-            var score = 0f
-
-            for (queryWord in queryWords) {
-                for (textWord in textWords) {
-                    when {
-                        textWord == queryWord -> score += 1.0f
-                        textWord.contains(queryWord) -> score += 0.7f
-                        queryWord.contains(textWord) && textWord.length > 3 -> score += 0.5f
-                    }
-                }
-            }
-
-            return score / queryWords.size
-        }
-
-        /**
-         * Computes the approximate total size in bytes of all cached memories.
-         *
-         * The size is estimated by summing key and value character counts and treating each character as 2 bytes.
-         *
-         * @return The estimated total size in bytes of all entries in the in-memory cache.
-         */
-        fun calculateTotalSize(): Long {
-            return memoryCache.values.sumOf {
-                (it.key!!.length + it.value.length) * 2L // 2 bytes per char (UTF-16)
-            }
-        }
-        return TODO("Provide the return value")
     }
 }

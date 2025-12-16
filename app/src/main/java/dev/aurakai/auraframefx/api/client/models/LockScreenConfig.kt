@@ -41,3 +41,18 @@ data class LockScreenConfig(
 
     ) : kotlin.collections.HashMap<String, kotlin.Any>()
 
+data class LockScreenConfigClockConfig(
+    val font: String,
+    val size: Int,
+    val color: String
+)
+
+data class LockScreenConfigAnimation(
+    val type: String,
+    val speed: Int
+)
+
+data class LockScreenConfigHapticFeedback(
+    val enabled: Boolean,
+    val intensity: Int
+)

@@ -1,7 +1,6 @@
 ﻿package dev.aurakai.auraframefx.ai.error
 
 import dev.aurakai.auraframefx.ai.pipeline.AIPipelineConfig
-import dev.aurakai.auraframefx.kai.ErrorStats
 import dev.aurakai.auraframefx.models.AgentType
 import dev.aurakai.auraframefx.oracledrive.genesis.ai.context.ContextManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -164,3 +163,11 @@ class MemoryException(message: String? = null) : Exception(message)
 class ContextException(message: String? = null) : Exception(message)
 class NetworkException(message: String? = null) : Exception(message)
 class TimeoutException(message: String? = null) : Exception(message)
+
+data class ErrorStats(
+    val totalErrors: Int = 0,
+    val activeErrors: Int = 0,
+    val lastError: AIError? = null,
+    val errorTypes: Map<ErrorType, Int> = emptyMap(),
+    val lastUpdated: Long = 0
+)

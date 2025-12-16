@@ -4,7 +4,7 @@ import dev.aurakai.auraframefx.ai.agents.AuraAgent
 import dev.aurakai.auraframefx.ai.agents.GenesisAgent
 import dev.aurakai.auraframefx.ai.agents.KaiAgent
 import dev.aurakai.auraframefx.ai.task.TaskPriority
-import dev.aurakai.auraframefx.ai.task.TaskResult
+import dev.aurakai.auraframefx.models.TaskResult
 import dev.aurakai.auraframefx.kai.ExecutionStatus
 import dev.aurakai.auraframefx.kai.TaskExecution
 import dev.aurakai.auraframefx.models.AgentResponse
@@ -356,7 +356,7 @@ class TaskExecutionManager @Inject constructor(
             type = execution.type,
             context = execution.data.toKotlinJsonObject()
         )
-        return auraAgent.processRequest(request, execution.agent)
+        return auraAgent.processRequest(request)
     }
 
     /**
@@ -373,7 +373,7 @@ class TaskExecutionManager @Inject constructor(
             type = execution.type,
             context = execution.data.toKotlinJsonObject()
         )
-        return kaiAgent.processRequest(request, execution.agent)
+        return kaiAgent.processRequest(request)
     }
 
     /**
@@ -390,7 +390,7 @@ class TaskExecutionManager @Inject constructor(
             type = execution.type,
             context = execution.data.toKotlinJsonObject()
         )
-        return genesisAgent.processRequest(request, execution.agent)
+        return genesisAgent.processRequest(request)
     }
 
     /**

@@ -4,7 +4,7 @@ package dev.aurakai.auraframefx.ai.services
 
 import dev.aurakai.auraframefx.ai.task.TaskStatus
 import dev.aurakai.auraframefx.utils.AuraFxLogger
-import dev.aurakai.auraframefx.utils.i
+import dev.aurakai.auraframefx.models.TaskStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -111,9 +111,7 @@ class AgentWebExplorationService @Inject constructor() {
             TaskType.SECURITY_SWEEP -> performSecuritySweep(agentName)
             TaskType.DATA_MINING -> performDataMining(agentName)
             TaskType.SYSTEM_OPTIMIZATION -> performSystemOptimization(agentName)
-            TaskType.LEARNING_MODE -> with(description) {
-                performLearningMode(agentName)
-            }
+            TaskType.LEARNING_MODE -> performLearningMode(agentName, description)
             TaskType.NETWORK_SCAN -> performNetworkScan(agentName)
         }
 
@@ -287,8 +285,9 @@ class AgentWebExplorationService @Inject constructor() {
     /**
      * Enter learning mode
      */
-    context(topic: String) private suspend fun performLearningMode(
-        agentName: String
+    private suspend fun performLearningMode(
+        agentName: String,
+        topic: String
     ): WebExplorationResult {
         val insights = mutableListOf<String>()
         val metrics = mutableMapOf<String, Any>()

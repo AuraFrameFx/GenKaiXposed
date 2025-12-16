@@ -2,7 +2,6 @@
 
 import dev.aurakai.auraframefx.models.AgentResponse
 import dev.aurakai.auraframefx.models.AiRequest
-import dev.aurakai.auraframefx.ai.config.AIConfig
 import java.io.File
 import kotlinx.coroutines.flow.Flow
 import dev.aurakai.auraframefx.models.ThemePreferences
@@ -56,11 +55,6 @@ interface AuraAIService {
      * Publishes a message to the specified Pub/Sub topic.
      */
     fun publishPubSub(topic: String, _message: String)
-
-    /**
-     * Retrieve the current AI configuration.
-     */
-    fun getAppConfig(): AIConfig?
 
     /**
      * Processes an AiRequest and produces a stream of AgentResponse events.

@@ -257,3 +257,40 @@ data class TaskStats(
     val taskCounts: Map<TaskStatus, Int> = emptyMap(),
     @kotlinx.serialization.Serializable(with = dev.aurakai.auraframefx.serialization.InstantSerializer::class) val lastUpdated: Instant = Clock.System.now(),
 )
+
+data class Task(
+    val id: String = java.util.UUID.randomUUID().toString(),
+    val content: String,
+    val context: String,
+    val priority: TaskPriority,
+    val urgency: TaskUrgency,
+    val importance: TaskImportance,
+    val requiredAgents: Set<AgentType>,
+    val dependencies: Set<String>,
+    val metadata: Map<String, String>,
+    val status: TaskStatus = TaskStatus.PENDING,
+    val assignedAgents: Set<AgentType> = emptySet(),
+    val createdAt: Instant = Clock.System.now()
+)
+
+enum class TaskPriority(val value: Float) {
+    LOW(0.2f),
+    NORMAL(0.5f),
+    HIGH(0.8f),
+    CRITICAL(1.0f)
+}
+
+enum class TaskUrgency(val value: Float) {
+    LOW(0.2f),
+    MEDIUM(0.5f),
+    HIGH(0.8f),
+    IMMEDIATE(1.0f)
+}
+
+enum class TaskImportance(val value: Float) {
+    TRIVIAL(0.1f),
+    MINOR(0.3f),
+    MEDIUM(0.5f),
+    MAJOR(0.7f),
+    CRITICAL(1.0f)
+}

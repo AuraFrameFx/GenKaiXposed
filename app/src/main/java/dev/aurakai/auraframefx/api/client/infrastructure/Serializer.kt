@@ -93,3 +93,63 @@ object Serializer {
             field = value
         }
 }
+
+object BigDecimalAdapter {
+    fun serialize(value: BigDecimal): String = value.toString()
+    fun deserialize(value: String): BigDecimal = BigDecimal(value)
+}
+
+object BigIntegerAdapter {
+    fun serialize(value: BigInteger): String = value.toString()
+    fun deserialize(value: String): BigInteger = BigInteger(value)
+}
+
+object LocalDateAdapter {
+    fun serialize(value: LocalDate): String = value.toString()
+    fun deserialize(value: String): LocalDate = LocalDate.parse(value)
+}
+
+object LocalDateTimeAdapter {
+    fun serialize(value: LocalDateTime): String = value.toString()
+    fun deserialize(value: String): LocalDateTime = LocalDateTime.parse(value)
+}
+
+object OffsetDateTimeAdapter {
+    fun serialize(value: OffsetDateTime): String = value.toString()
+    fun deserialize(value: String): OffsetDateTime = OffsetDateTime.parse(value)
+}
+
+object UUIDAdapter {
+    fun serialize(value: UUID): String = value.toString()
+    fun deserialize(value: String): UUID = UUID.fromString(value)
+}
+
+object AtomicIntegerAdapter {
+    fun serialize(value: AtomicInteger): String = value.toString()
+    fun deserialize(value: String): AtomicInteger = AtomicInteger(value.toInt())
+}
+
+object AtomicLongAdapter {
+    fun serialize(value: AtomicLong): String = value.toString()
+    fun deserialize(value: String): AtomicLong = AtomicLong(value.toLong())
+}
+
+object AtomicBooleanAdapter {
+    fun serialize(value: AtomicBoolean): String = value.toString()
+    fun deserialize(value: String): AtomicBoolean = AtomicBoolean(value.toBoolean())
+}
+
+object URIAdapter {
+    fun serialize(value: URI): String = value.toString()
+    fun deserialize(value: String): URI = URI.create(value)
+}
+
+object URLAdapter {
+    fun serialize(value: URL): String = value.toString()
+    fun deserialize(value: String): URL = URL(value)
+}
+
+object StringBuilderAdapter {
+    fun serialize(value: StringBuilder): String = value.toString()
+    fun deserialize(value: String): StringBuilder = StringBuilder(value)
+}

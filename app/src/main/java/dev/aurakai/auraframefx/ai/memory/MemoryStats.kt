@@ -128,4 +128,9 @@ data class InteractionEntry(
     val relevanceScore: Float = 0.0f
 )
 
-// MemoryEntry is defined in its own file
+data class MemoryEntry(
+    val key: String,
+    val value: String,
+    val timestamp: Long,
+    val relevanceScore: Float = 0.0f
+)

@@ -385,3 +385,8 @@ open class ApiClient(val baseUrl: String, val client: Call.Factory = defaultClie
         return Serializer.kotlinxSerializationJson.encodeToString(value).replace("\"", "")
     }
 }
+
+data class PartConfig<T>(
+    val body: T,
+    val headers: Map<String, String> = emptyMap()
+)

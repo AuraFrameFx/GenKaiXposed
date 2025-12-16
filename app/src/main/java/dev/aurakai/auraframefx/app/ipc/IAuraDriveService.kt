@@ -48,7 +48,7 @@ interface IAuraDriveService : IInterface {
         override fun asBinder(): IBinder = this
 
         companion object {
-            private const val DESCRIPTOR = "dev.aurakai.auraframefx.app.ipc.IAuraDriveService"
+            const val DESCRIPTOR = "dev.aurakai.auraframefx.app.ipc.IAuraDriveService"
 
             fun asInterface(obj: IBinder?): IAuraDriveService? {
                 if (obj == null) return null
@@ -60,7 +60,7 @@ interface IAuraDriveService : IInterface {
             }
         }
 
-        private abstract class Proxy(private val mRemote: IBinder) : IAuraDriveService {
+        private class Proxy(private val mRemote: IBinder) : IAuraDriveService {
             override fun asBinder(): IBinder = mRemote
             override fun getOracleDriveStatus(): String = "Proxy: Not implemented"
             override fun toggleLSPosedModule(packageName: String, enable: Boolean): String = "Not implemented"

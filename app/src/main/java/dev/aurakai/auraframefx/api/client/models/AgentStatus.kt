@@ -54,3 +54,6 @@ data class AgentStatus(
 
     )
 
+enum class AgentType {
+    AURA, KAI, GENESIS, CASCADE, SYSTEM
+}

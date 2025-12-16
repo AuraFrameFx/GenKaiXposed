@@ -52,28 +52,12 @@ annotation class updateStats
 open class MemoryManager @Inject constructor(
     private val config: Configuration // Injected dependency to resolve 'config'
 ) {
-    private var _memoryStats: MutableStateFlow<dev.aurakai.auraframefx.oracledrive.genesis.ai.memory.MemoryStats> =
-        TODO("initialize me")
+    private val _memoryStats = MutableStateFlow(MemoryStats())
+    open val memoryStats: StateFlow<MemoryStats> = _memoryStats
 
     private val memoryStore = ConcurrentHashMap<String, MemoryItem>()
     private val _recentAccess = MutableStateFlow(mutableSetOf<String>())
     val recentAccess: StateFlow<Set<String>> = _recentAccess
-
-    private fun MemoryStats(): MemoryStats {
-        TODO("Not yet implemented")
-    }
-
-    // The public property now correctly exposes the StateFlow<MemoryStats>
-    open val memoryStats: MutableStateFlow<dev.aurakai.auraframefx.oracledrive.genesis.ai.memory.MemoryStats> =
-        _memoryStats()
-
-    private fun _memoryStats(): MutableStateFlow<dev.aurakai.auraframefx.oracledrive.genesis.ai.memory.MemoryStats> {
-        TODO("Not yet implemented")
-    }
-
-    private fun memoryStats(): MutableStateFlow<dev.aurakai.auraframefx.oracledrive.genesis.ai.memory.MemoryStats> {
-        TODO("Not yet implemented")
-    }
 
     /**
      * Stores the given memory item in the memory store, updates memory statistics, and tracks recent access.
@@ -84,12 +68,8 @@ open class MemoryManager @Inject constructor(
     fun storeMemory(item: MemoryItem): String {
         memoryStore[item.id] = item
         updateStats()
-        updateRecentAccess(item.id)
+        _recentAccess.update { it + item.id }
         return item.id
-    }
-
-    private fun updateRecentAccess(id: String) {
-        TODO("Not yet implemented")
     }
 
     /**
@@ -117,31 +97,33 @@ open class MemoryManager @Inject constructor(
             query = query
         )
     }
-}
-
-    /**
-     * Returns memory items whose timestamps are within the configured context window duration from the current time.
-     *
-     * Items are sorted by descending timestamp and limited to the maximum number specified in the configuration.
-     *
-     * @param task The task identifier (currently not used for filtering).
-     * @return A list of recent memory items within the context window.
-
 
     /**
      * Retrieves the latest memory statistics snapshot.
      *
      * @return The current `MemoryStats` representing the state of the memory store.
      */
-    fun getMemoryStats(): MemoryStats? {
-    return getMemoryStats()!!.value
+    fun getMemoryStats(): MemoryStats {
+        return _memoryStats.value
     }
 
-
-
-    // Corrected type to MutableStateFlow<MemoryStats> and initialized with a default value
     /**
      * Updates the memory statistics with the current total number of items, count of recent items, and total memory size.
      *
      * Recent items are with timestamps within the configured maximum chain length duration from the current time.
      */
+    private fun updateStats() {
+        val now = System.currentTimeMillis()
+        val recentThreshold = now - (config.contextChainingConfig.maxChainLength * 1000)
+        val recentItems = memoryStore.values.filter { it.timestamp > recentThreshold }.size
+        val totalSize = memoryStore.values.sumOf { it.content.length.toLong() }
+
+        _memoryStats.update {
+            it.copy(
+                totalItems = memoryStore.size,
+                recentItems = recentItems,
+                memorySize = totalSize
+            )
+        }
+    }
+}
