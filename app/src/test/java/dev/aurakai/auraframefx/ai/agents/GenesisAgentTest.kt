@@ -91,7 +91,7 @@ class FailingAgent(
 }
 
 import dev.aurakai.auraframefx.ai.clients.VertexAIClient
-import dev.aurakai.auraframefx.ai.context.ContextManager
+import dev.aurakai.auraframefx.context.ContextManager
 import dev.aurakai.auraframefx.security.SecurityContext
 import dev.aurakai.auraframefx.utils.AuraFxLogger
 import io.mockk.coEvery

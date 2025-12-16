@@ -16,9 +16,7 @@ data class MemoryItem(
     val priority: Float = 0.5f,
     val tags: List<String> = emptyList(),
     val metadata: Map<String, String> = emptyMap(),
-) {
-    val agentId: Any
-}
+)
 
 @Serializable
 data class MemoryQuery(

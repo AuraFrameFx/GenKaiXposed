@@ -2,7 +2,6 @@ package dev.aurakai.auraframefx.security
 
 import android.content.Context
 import dev.aurakai.auraframefx.utils.AuraFxLogger
-import dev.aurakai.auraframefx.utils.i
 import io.mockk.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.*
@@ -10,8 +9,9 @@ import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.junit.jupiter.MockitoExtension
-import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.InputStream
+import java.io.ByteArrayInputStream
 import java.security.MessageDigest
 
 /**
@@ -40,7 +40,7 @@ class IntegrityMonitorTest {
 
         // Mock AuraFxLogger to prevent actual logging during tests
         mockkObject(AuraFxLogger)
-        every { i(any(), any()) } just Runs
+        every { AuraFxLogger.i(any(), any()) } just Runs
         every { AuraFxLogger.w(any(), any()) } just Runs
         every { AuraFxLogger.e(any(), any(), any()) } just Runs
         every { AuraFxLogger.d(any(), any()) } just Runs
@@ -76,13 +76,13 @@ class IntegrityMonitorTest {
                 integrityMonitor.integrityStatus.value
             )
             verify {
-                i(
+                AuraFxLogger.i(
                     "IntegrityMonitor",
                     "Initializing Kai's Real-Time Integrity Monitoring"
                 )
             }
             verify {
-                i(
+                AuraFxLogger.i(
                     "IntegrityMonitor",
                     "Integrity monitoring active - Genesis Protocol protected"
                 )
@@ -447,7 +447,7 @@ class IntegrityMonitorTest {
                     "MEDIUM THREAT DETECTED - Monitoring closely"
                 )
             }
-            verify { i("IntegrityMonitor", "Enhancing monitoring protocols") }
+            verify { AuraFxLogger.i("IntegrityMonitor", "Enhancing monitoring protocols") }
         }
 
         @Test
@@ -466,7 +466,7 @@ class IntegrityMonitorTest {
             )
             assertEquals(IntegrityMonitor.ThreatLevel.LOW, integrityMonitor.threatLevel.value)
             verify {
-                i(
+                AuraFxLogger.i(
                     "IntegrityMonitor",
                     "LOW THREAT DETECTED - Logging for analysis"
                 )
@@ -709,7 +709,7 @@ class IntegrityMonitorTest {
                 IntegrityMonitor.IntegrityStatus.OFFLINE,
                 integrityMonitor.integrityStatus.value
             )
-            verify { i("IntegrityMonitor", "Shutting down integrity monitoring") }
+            verify { AuraFxLogger.i("IntegrityMonitor", "Shutting down integrity monitoring") }
         }
 
         @Test
@@ -729,7 +729,7 @@ class IntegrityMonitorTest {
                 integrityMonitor.integrityStatus.value
             )
             verify(atLeast = 1) {
-                i(
+                AuraFxLogger.i(
                     "IntegrityMonitor",
                     "Shutting down integrity monitoring"
                 )

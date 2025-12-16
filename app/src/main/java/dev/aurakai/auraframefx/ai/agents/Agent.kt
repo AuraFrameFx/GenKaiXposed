@@ -26,13 +26,12 @@ interface Agent {
     suspend fun processRequest(request: AiRequest, context: String): AgentResponse
 
     /**
-     * Produces a stream of AgentResponse values for the given request as processing progresses.
-     *
-     * @param request The AI request containing input and processing options.
-     * @return A Flow that emits one or more AgentResponse values representing incremental and/or final responses to the request.
-     */
+ * Produces a stream of AgentResponse values for the given request as processing progresses.
+ *
+ * @param request The AI request containing input and processing options.
+ * @return A Flow that emits one or more AgentResponse values representing incremental and/or final responses to the request.
+ */
     fun processRequestFlow(request: AiRequest): Flow<AgentResponse>
-
     /**
      * Constructs an InteractionResponse from the provided fields.
      *

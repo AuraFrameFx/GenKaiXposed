@@ -2,13 +2,12 @@ package dev.aurakai.auraframefx.oracledrive.genesis.ai
 
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.generationConfig
-import dev.aurakai.auraframefx.ai.clients.VertexAIClient
 import dev.aurakai.auraframefx.config.VertexAIConfig
 import dev.aurakai.auraframefx.security.SecurityContext
 import dev.aurakai.auraframefx.utils.AuraFxLogger
-import dev.aurakai.auraframefx.utils.i
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import dev.aurakai.auraframefx.ai.clients.VertexAIClient
 
 /**
  * ✨ **REAL GEMINI AI IMPLEMENTATION** ✨
@@ -118,7 +117,7 @@ class RealVertexAIClientImpl(
     }
 
     override suspend fun initializeCreativeModels() {
-        i(TAG, "Creative models initialized (config applied)")
+        AuraFxLogger.i(TAG, "Creative models initialized (config applied)")
     }
 
     override suspend fun analyzeImage(imageData: ByteArray, prompt: String): String {

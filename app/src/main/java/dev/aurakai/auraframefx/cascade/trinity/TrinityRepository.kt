@@ -6,9 +6,9 @@ import dev.aurakai.auraframefx.models.AgentRequest
 import dev.aurakai.auraframefx.models.AgentStatus
 import dev.aurakai.auraframefx.models.Theme
 import dev.aurakai.auraframefx.models.UserData
-import dev.aurakai.auraframefx.network.AuraApiServiceWrapper
 import dev.aurakai.auraframefx.network.model.*
 import dev.aurakai.auraframefx.models.*
+import dev.aurakai.auraframefx.network.AuraApiService
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,7 +19,7 @@ import dev.aurakai.auraframefx.network.model.User as NetworkUser
 
 @Singleton
 open class TrinityRepository @Inject constructor(
-    private val apiService: AuraApiServiceWrapper
+    private val apiService: AuraApiService
 ) {
     // User related operations
     fun getCurrentUser() = flow {
@@ -39,28 +39,28 @@ open class TrinityRepository @Inject constructor(
      */
     fun getAgentStatus(agentType: String) = flow {
         try {
-            val response = apiService.aiAgentApi.getAgentStatus()
+            val response = apiService.aiAgentApi.getAgentStatus(agentType)
             emit(success(mapToDomainAgentStatus(response)))
         } catch (e: Exception) {
             emit(failure(e))
         }
     }
 
-    private fun mapToDomainAgentStatus(agentResponse: AgentStatusResponse): AgentStatus {
+    private fun mapToDomainAgentStatus(agentResponse: AgentResponse): AgentStatus {
         return AgentStatus(
             agentId = agentResponse.agentName ?: "unknown",
-            status = if ((agentResponse.confidence ?: 0f) > 0.7f) AgentStatus.Status.ACTIVE else AgentStatus.Status.IDLE,
-            lastActiveTimestamp = agentResponse.timestamp ?: 0L,
+            status = if (agentResponse.confidence > 0.7f) AgentStatus.Status.ACTIVE else AgentStatus.Status.IDLE,
+            lastActiveTimestamp = agentResponse.timestamp,
             isAvailable = agentResponse.error == null,
             capabilities = emptyList(),
             error = agentResponse.error,
-            metadata = agentResponse.metadata ?: emptyMap()
+            metadata = agentResponse.metadata
         )
     }
 
-    fun processAgentRequest(agentType: String, request: AgentRequest) = flow<Result<AgentResponse>> {
+    fun processAgentRequest(agentType: String, request: AgentRequest) = flow {
         try {
-            val response = apiService.aiAgentApi.processAgentRequest(agentType, request)
+            val response = apiService.aiAgentApi.processRequest(agentType, request)
             emit(success(response))
         } catch (e: Exception) {
             emit(failure(e))

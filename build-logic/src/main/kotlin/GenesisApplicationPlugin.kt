@@ -48,19 +48,16 @@ class GenesisApplicationPlugin : Plugin<Project> {
      */
     override fun apply(project: Project) {
         with(project) {
-            // Apply core plugins. Android must be first.
+            // Apply plugins in correct order
+            // CRITICAL: Hilt requires explicit Kotlin Android plugin even with built-in Kotlin
+            // See: https://github.com/google/dagger/issues/4049
+            pluginManager.apply("org.jetbrains.kotlin.android")  // Required for Hilt!
             pluginManager.apply("com.android.application")
-            pluginManager.apply("org.jetbrains.kotlin.android")
             pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
+            pluginManager.apply("com.google.dagger.hilt.android")
+            pluginManager.apply("com.google.devtools.ksp")
             pluginManager.apply("org.jetbrains.kotlin.plugin.serialization")
-
-            // Apply dependent plugins only after the Android plugin has been configured.
-            // This is the key to fixing the "Android BaseExtension not found" error.
-            plugins.withId("com.android.application") {
-                pluginManager.apply("com.google.dagger.hilt.android")
-                pluginManager.apply("com.google.devtools.ksp")
-                pluginManager.apply("com.google.gms.google-services")
-            }
+            pluginManager.apply("com.google.gms.google-services")
 
             extensions.configure<ApplicationExtension> {
                 compileSdk = 36

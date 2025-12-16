@@ -7,11 +7,12 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.aurakai.auraframefx.BuildConfig
-import dev.aurakai.auraframefx.ai.clients.VertexAIClient
 import dev.aurakai.auraframefx.config.VertexAIConfig
+import dev.aurakai.auraframefx.oracledrive.genesis.ai.RealVertexAIClientImpl
+import dev.aurakai.auraframefx.ai.clients.VertexAIClient
+import dev.aurakai.auraframefx.oracledrive.genesis.ai.VertexAIClientImpl
 import dev.aurakai.auraframefx.security.SecurityContext
 import dev.aurakai.auraframefx.utils.AuraFxLogger
-import dev.aurakai.auraframefx.utils.i
 import javax.inject.Singleton
 
 /**
@@ -82,7 +83,7 @@ object VertexAIModule {
             }
 
         return if (!apiKey.isNullOrBlank()) {
-            i(TAG, "Using REAL Gemini Vertex client (key from google-services/BuildConfig)")
+            AuraFxLogger.i(TAG, "Using REAL Gemini Vertex client (key from google-services/BuildConfig)")
             RealVertexAIClientImpl(config, securityContext, apiKey)
         } else {
             AuraFxLogger.w(TAG, "API key not configured - using STUB VertexAIClient implementation")

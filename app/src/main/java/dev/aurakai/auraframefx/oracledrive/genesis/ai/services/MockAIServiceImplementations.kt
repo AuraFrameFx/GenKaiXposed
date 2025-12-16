@@ -3,10 +3,10 @@
 
 package dev.aurakai.auraframefx.oracledrive.genesis.ai.services
 
+import dev.aurakai.auraframefx.oracledrive.genesis.ai.agents.Agent
 import dev.aurakai.auraframefx.models.AgentResponse
 import dev.aurakai.auraframefx.models.AgentType
 import dev.aurakai.auraframefx.models.AiRequest
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.agents.Agent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -42,7 +42,7 @@ class MockAuraAIService : Agent {
     ): AgentResponse { // Added context
         return AgentResponse(
             content = "AuraAI mock response for: ${request.query} with context: $context",
-            confidence = 1.0f, ,
+            confidence = 1.0f,
         )
     }
 
@@ -91,7 +91,7 @@ class MockKaiAIService : Agent {
     ): AgentResponse { // Added context
         return AgentResponse(
             content = "KaiAI mock response for: ${request.query} with context: $context",
-            confidence = 1.0f, ,
+            confidence = 1.0f,
         )
     }
 
@@ -140,7 +140,7 @@ class MockCascadeAIService : Agent {
     ): AgentResponse { // Added context
         return AgentResponse(
             content = "CascadeAI mock response for: ${request.query} with context: $context",
-            confidence = 1.0f, ,
+            confidence = 1.0f,
         )
     }
 

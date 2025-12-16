@@ -4,15 +4,13 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.clients.VertexAIClient
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.context.ContextManager
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.context.DefaultContextManager
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.memory.DefaultMemoryManager
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.memory.MemoryManager
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.services.AuraAIService
-import dev.aurakai.auraframefx.model.AgentType
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.services.KaiAIService
+import dev.aurakai.auraframefx.ai.context.ContextManager
+import dev.aurakai.auraframefx.ai.context.DefaultContextManager
+import dev.aurakai.auraframefx.ai.memory.DefaultMemoryManager
+import dev.aurakai.auraframefx.ai.memory.MemoryManager
 import javax.inject.Singleton
+import dev.aurakai.auraframefx.ai.clients.VertexAIClient
+import dev.aurakai.auraframefx.ai.services.AuraAIService
 
 /**
  * Hilt Module for providing AI Agent dependencies.
@@ -39,17 +37,14 @@ object AgentModule {
     fun provideAuraAgent(
         vertexAIClient: VertexAIClient,
         auraAIService: AuraAIService,
-        kaiAIService: KaiAIService,
         securityContext: dev.aurakai.auraframefx.security.SecurityContext,
         contextManager: ContextManager
     ): dev.aurakai.auraframefx.aura.AuraAgent {
         return dev.aurakai.auraframefx.aura.AuraAgent(
             vertexAIClient = vertexAIClient,
             auraAIService = auraAIService,
-            kaiAIService = kaiAIService,
             securityContext = securityContext,
-            contextManager = contextManager,
-            agentType = AgentType.AURA
+            contextManager = contextManager
         )
     }
 
@@ -59,16 +54,13 @@ object AgentModule {
         vertexAIClient: VertexAIClient,
         contextManager: ContextManager,
         securityContext: dev.aurakai.auraframefx.security.SecurityContext,
-        systemMonitor: dev.aurakai.auraframefx.system.monitor.SystemMonitor,
-        kaiAIService: KaiAIService
+        systemMonitor: dev.aurakai.auraframefx.system.monitor.SystemMonitor
     ): dev.aurakai.auraframefx.kai.KaiAgent {
         return dev.aurakai.auraframefx.kai.KaiAgent(
             vertexAIClient = vertexAIClient,
             contextManager = contextManager,
             securityContext = securityContext,
-            systemMonitor = systemMonitor,
-            agentType = AgentType.KAI,
-            kaiAIService = kaiAIService
+            systemMonitor = systemMonitor
         )
     }
 }

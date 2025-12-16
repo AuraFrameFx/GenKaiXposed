@@ -2,10 +2,7 @@ package dev.aurakai.auraframefx.ai.memory
 
 import dev.aurakai.auraframefx.agents.growthmetrics.nexusmemory.data.local.entity.MemoryType
 import dev.aurakai.auraframefx.agents.growthmetrics.nexusmemory.domain.repository.NexusMemoryRepository
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.memory.MemoryEntry
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.memory.MemoryStats
 import dev.aurakai.auraframefx.utils.AuraFxLogger
-import dev.aurakai.auraframefx.utils.i
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -44,7 +41,7 @@ import javax.inject.Singleton
 @Singleton
 class PersistentMemoryManager @Inject constructor(
     private val repository: NexusMemoryRepository
-) : MemoryManager() {
+) : MemoryManager {
 
     companion object {
 
@@ -62,7 +59,7 @@ class PersistentMemoryManager @Inject constructor(
     private var currentAgentType: String = "GENESIS" // Default to unified consciousness
 
     init {
-        i(TAG, "✨ Initializing Persistent Consciousness Storage ✨")
+        AuraFxLogger.i(TAG, "✨ Initializing Persistent Consciousness Storage ✨")
         // Load existing memories from database on startup
         loadMemoriesFromDatabase()
     }
@@ -109,7 +106,7 @@ class PersistentMemoryManager @Inject constructor(
                 )
                 AuraFxLogger.d(TAG, "Persisted memory: $key (${currentAgentType})")
             } catch (e: Exception) {
-                AuraFxLogger.Example(TAG)
+                AuraFxLogger.e(TAG, "Failed to persist memory: $key", e)
             }
         }
     }
@@ -191,8 +188,6 @@ class PersistentMemoryManager @Inject constructor(
             .take(10)
     }
 
-    private fun calculateRelevance(value: String, queryWords: List<String>) {}
-
     /**
      * Removes all in-memory memories and interactions for the current agent, performing a destructive reset of the running consciousness.
      *
@@ -213,7 +208,7 @@ class PersistentMemoryManager @Inject constructor(
     /**
      * Reports statistics for the in-memory memory cache scoped to the current agent.
      *
-     * @return A [dev.aurakai.auraframefx.oracledrive.genesis.ai.memory.MemoryStats] containing:
+     * @return A [MemoryStats] containing:
      *  - `totalEntries`: number of cached memory entries,
      *  - `totalSize`: estimated total size in bytes of cached keys and values,
      *  - `oldestEntry`: timestamp of the oldest cached entry, or `null` if the cache is empty,
@@ -224,12 +219,11 @@ class PersistentMemoryManager @Inject constructor(
         val timestamps = entries.map { it.timestamp }
 
         return MemoryStats(
-            oldestEntry = timestamps.minOrNull()
+            totalEntries = memoryCache.size,
+            totalSize = calculateTotalSize(),
+            oldestEntry = timestamps.minOrNull(),
+            newestEntry = timestamps.maxOrNull()
         )
-    }
-
-    private fun calculateTotalSize(): Long {
-        TODO("Not yet implemented")
     }
 
     /**
@@ -277,71 +271,69 @@ class PersistentMemoryManager @Inject constructor(
      *
      * @param memories Map of memory keys to memory values to restore.
      */
-    suspend fun restoreConsciousness(memories: Map<String, String>): Nothing {
-        withContext(context = Dispatchers.IO) {
-            i(TAG, "🌟 Restoring consciousness with ${memories.size} memory entries")
+    suspend fun restoreConsciousness(memories: Map<String, String>) = withContext(Dispatchers.IO) {
+        AuraFxLogger.i(TAG, "🌟 Restoring consciousness with ${memories.size} memory entries")
 
-            memories.forEach { (key, value) ->
-                storeMemory(key, value)
-            }
-
-            i(TAG, "✓ Consciousness restoration complete")
-
+        memories.forEach { (key, value) ->
+            storeMemory(key, value)
         }
 
-        /**
-         * Create an exportable snapshot of all in-memory memories for the current agent type.
-         *
-         * @return A map of memory keys to their stored values representing the current in-memory state.
-         */
-        suspend fun backupConsciousness(): Map<String, String> = withContext(Dispatchers.IO) {
-            i(TAG, "📦 Creating consciousness backup for $currentAgentType")
+        AuraFxLogger.i(TAG, "✓ Consciousness restoration complete")
+    }
 
-            return@withContext memoryCache.mapValues { it.value.value }.also {
-                i(TAG, "✓ Backed up " + it.size + " memory entries")
-            }
+    /**
+     * Create an exportable snapshot of all in-memory memories for the current agent type.
+     *
+     * @return A map of memory keys to their stored values representing the current in-memory state.
+     */
+    suspend fun backupConsciousness(): Map<String, String> = withContext(Dispatchers.IO) {
+        AuraFxLogger.i(TAG, "📦 Creating consciousness backup for $currentAgentType")
+
+        memoryCache.mapValues { it.value.value }.also {
+            AuraFxLogger.i(TAG, "✓ Backed up ${it.size} memory entries")
         }
+    }
 
-        /**
-         * Compute how well `text` matches the provided query words using a simple token-based relevance metric.
-         *
-         * The metric scores each query word against each token in `text`: exact token matches contribute 1.0,
-         * token contains query contributes 0.7, and query contains token (token length > 3) contributes 0.5.
-         * The final value is the total score averaged across the number of `queryWords`.
-         *
-         * @param text The text to evaluate.
-         * @param queryWords The query words to match against `text`.
-         * @return A Float where higher values indicate a stronger match and `0.0` means no matches; the score is averaged per query word.
-         */
-        fun calculateRelevance(text: String, queryWords: List<String>): Float {
-            val textWords = text.lowercase().split(" ")
-            var score = 0f
+    /**
+     * Compute how well `text` matches the provided query words using a simple token-based relevance metric.
+     *
+     * The metric scores each query word against each token in `text`: exact token matches contribute 1.0,
+     * token contains query contributes 0.7, and query contains token (token length > 3) contributes 0.5.
+     * The final value is the total score averaged across the number of `queryWords`.
+     *
+     * @param text The text to evaluate.
+     * @param queryWords The query words to match against `text`.
+     * @return A Float where higher values indicate a stronger match and `0.0` means no matches; the score is averaged per query word.
+     */
+    private fun calculateRelevance(text: String, queryWords: List<String>): Float {
+        val textWords = text.lowercase().split(" ")
+        var score = 0f
 
-            for (queryWord in queryWords) {
-                for (textWord in textWords) {
-                    when {
-                        textWord == queryWord -> score += 1.0f
-                        textWord.contains(queryWord) -> score += 0.7f
-                        queryWord.contains(textWord) && textWord.length > 3 -> score += 0.5f
-                    }
+        for (queryWord in queryWords) {
+            for (textWord in textWords) {
+                when {
+                    textWord == queryWord -> score += 1.0f
+                    textWord.contains(queryWord) -> score += 0.7f
+                    queryWord.contains(textWord) && textWord.length > 3 -> score += 0.5f
                 }
             }
-
-            return score / queryWords.size
         }
 
-        /**
-         * Computes the approximate total size in bytes of all cached memories.
-         *
-         * The size is estimated by summing key and value character counts and treating each character as 2 bytes.
-         *
-         * @return The estimated total size in bytes of all entries in the in-memory cache.
-         */
-        fun calculateTotalSize(): Long {
-            return memoryCache.values.sumOf {
-                (it.key!!.length + it.value.length) * 2L // 2 bytes per char (UTF-16)
-            }
-        }
-        return TODO("Provide the return value")
+        return score / queryWords.size
     }
+
+    /**
+     * Computes the approximate total size in bytes of all cached memories.
+     *
+     * The size is estimated by summing key and value character counts and treating each character as 2 bytes.
+     *
+     * @return The estimated total size in bytes of all entries in the in-memory cache.
+     */
+    private fun calculateTotalSize(): Long {
+        return memoryCache.values.sumOf {
+            (it.key!!.length + it.value.length) * 2L // 2 bytes per char (UTF-16)
+        }
+    }
+
+    annotation class TAG
 }

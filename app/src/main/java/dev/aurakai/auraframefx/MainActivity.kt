@@ -20,15 +20,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
-import dagger.hilt.android.AndroidEntryPoint
 import dev.aurakai.auraframefx.navigation.AppNavGraph
 import dev.aurakai.auraframefx.ui.components.BottomNavigationBar
+import dev.aurakai.auraframefx.navigation.AppNavGraph
+import dev.aurakai.auraframefx.ui.animation.digitalPixelEffect
+import dev.aurakai.auraframefx.ui.components.digitalPixelEffect
 import dev.aurakai.auraframefx.ui.theme.AuraFrameFXTheme
 import dev.aurakai.auraframefx.ui.theme.ThemeViewModel
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             AuraFrameFXTheme {
-                val themeViewModel: ThemeViewModel = hiltViewModel()
+                val themeViewModel: ThemeViewModel = androidx.hilt.navigation.compose.hiltViewModel()
                 MainScreen(themeViewModel = themeViewModel)
             }
         }
@@ -109,6 +109,3 @@ fun MainScreenPreview() {
         MainScreenContent(processThemeCommand = { /* no-op in preview */ })
     }
 }
-
-// Extension function placeholder - this should be implemented elsewhere
-fun Modifier.digitalPixelEffect(): Modifier = this

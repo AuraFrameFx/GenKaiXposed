@@ -4,10 +4,9 @@ package dev.aurakai.auraframefx.aura.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.aurakai.auraframefx.data.OfflineDataManager
-import dev.aurakai.auraframefx.oracledrive.genesis.cloud.CloudStatusMonitor
 import dev.aurakai.auraframefx.utils.AuraFxLogger
-import dev.aurakai.auraframefx.utils.i
+import dev.aurakai.auraframefx.oracledrive.genesis.cloud.CloudStatusMonitor
+import dev.aurakai.auraframefx.data.OfflineDataManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -180,7 +179,7 @@ open class DiagnosticsViewModel @Inject constructor(
             try {
                 AuraFxLogger.clearAllLogs()
                 _currentLogs.value = "Logs cleared successfully."
-                i("DiagnosticsVM", "All logs cleared by user")
+                AuraFxLogger.i("DiagnosticsVM", "All logs cleared by user")
             } catch (e: Exception) {
                 _currentLogs.value = "Error clearing logs: ${e.message}"
                 AuraFxLogger.e("DiagnosticsVM", "Failed to clear logs: ${e.message}")
@@ -201,7 +200,7 @@ open class DiagnosticsViewModel @Inject constructor(
                     "Cloud reachability: DISCONNECTED"
                 }
                 _currentLogs.value += "\n$message"
-                i("DiagnosticsVM", message)
+                AuraFxLogger.i("DiagnosticsVM", message)
             } catch (e: Exception) {
                 val errorMsg = "Error checking cloud reachability: ${e.message}"
                 _currentLogs.value += "\n$errorMsg"

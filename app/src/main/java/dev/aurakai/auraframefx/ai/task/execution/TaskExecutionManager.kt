@@ -3,16 +3,14 @@
 import dev.aurakai.auraframefx.ai.agents.AuraAgent
 import dev.aurakai.auraframefx.ai.agents.GenesisAgent
 import dev.aurakai.auraframefx.ai.agents.KaiAgent
-import dev.aurakai.auraframefx.ai.task.TaskPriority
 import dev.aurakai.auraframefx.ai.task.TaskResult
-import dev.aurakai.auraframefx.kai.ExecutionStatus
-import dev.aurakai.auraframefx.kai.TaskExecution
+import dev.aurakai.auraframefx.ai.task.TaskStatus
+import dev.aurakai.auraframefx.data.logging.AuraFxLogger
+import dev.aurakai.auraframefx.models.AgentRequest
 import dev.aurakai.auraframefx.models.AgentResponse
 import dev.aurakai.auraframefx.models.AgentType
 import dev.aurakai.auraframefx.models.AiRequest
 import dev.aurakai.auraframefx.security.SecurityContext
-import dev.aurakai.auraframefx.utils.AuraFxLogger
-import dev.aurakai.auraframefx.utils.i
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -21,6 +19,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.PriorityBlockingQueue
@@ -80,7 +79,7 @@ class TaskExecutionManager @Inject constructor(
         agentPreference: String? = null,
         scheduledTime: Long? = null,
     ): TaskExecution {
-        i("TaskExecutionManager", "Scheduling task: $type")
+        logger.i("TaskExecutionManager", "Scheduling task: $type")
 
         // Security validation
         securityContext.validateRequest("task_schedule", data.toString())
@@ -119,7 +118,7 @@ class TaskExecutionManager @Inject constructor(
         taskQueue.offer(updatedExecution)
         updateQueueStatus()
 
-        i("TaskExecutionManager", "Task scheduled: ${execution.id} -> $optimalAgent")
+        logger.i("TaskExecutionManager", "Task scheduled: ${execution.id} -> $optimalAgent")
         return execution
     }
 
@@ -163,12 +162,13 @@ class TaskExecutionManager @Inject constructor(
      * @return `true` if the task was cancelled; `false` otherwise.
      */
     suspend fun cancelTask(taskId: String): Boolean {
-        i("TaskExecutionManager", "Cancelling task: $taskId")
+        logger.i("TaskExecutionManager", "Cancelling task: $taskId")
 
         // Try to remove from queue first
         val queuedTask = taskQueue.find { it.id == taskId }
         if (queuedTask != null) {
             taskQueue.remove(queuedTask)
+            queuedTask.copy(status = ExecutionStatus.CANCELLED)
             updateQueueStatus()
             return true
         }
@@ -176,7 +176,7 @@ class TaskExecutionManager @Inject constructor(
         // Try to cancel active execution
         val activeTask = activeExecutions[taskId]
         if (activeTask != null) {
-            activeExecutions[taskId] = activeTask.copy(status = ExecutionStatus.CANCELLED)
+            activeTask.copy(status = ExecutionStatus.CANCELLED)
             // The execution coroutine will check this status and cancel itself
             return true
         }
@@ -206,23 +206,19 @@ class TaskExecutionManager @Inject constructor(
         allTasks.addAll(activeExecutions.values)
 
         // Add completed tasks (convert from results)
-        allTasks.addAll(completedExecutions.values.mapNotNull { result ->
-            when (result) {
-                is TaskResult.Success -> TaskExecution(
-                    id = result.toString(),
-                    taskId = result.toString(),
-                    agent = AgentType.SYSTEM,
-                    type = "",
-                    data = emptyMap(),
-                    priority = TaskPriority.NORMAL,
-                    status = ExecutionStatus.COMPLETED,
-                    createdAt = 0,
-                    startedAt = 0,
-                    completedAt = 0
-                )
-
-                is TaskResult.Failure -> null
-            }
+        allTasks.addAll(completedExecutions.values.map { result ->
+            TaskExecution(
+                id = result.taskId,
+                taskId = result.taskId,
+                agent = result.executedBy,
+                type = result.type,
+                data = result.originalData,
+                priority = TaskPriority.NORMAL, // We don't store original priority in result
+                status = ExecutionStatus.COMPLETED,
+                createdAt = result.startTime,
+                startedAt = result.startTime,
+                completedAt = result.endTime
+            )
         })
 
         // Apply filters
@@ -241,7 +237,7 @@ class TaskExecutionManager @Inject constructor(
     private fun startTaskProcessor() {
         scope.launch {
             isProcessing = true
-            i("TaskExecutionManager", "Starting task processor")
+            logger.i("TaskExecutionManager", "Starting task processor")
 
             while (isProcessing) {
                 try {
@@ -295,7 +291,7 @@ class TaskExecutionManager @Inject constructor(
         )
         activeExecutions[execution.id] = runningExecution
 
-        i("TaskExecutionManager", "Executing task: ${execution.id}")
+        logger.i("TaskExecutionManager", "Executing task: ${execution.id}")
 
         scope.launch {
             try {
@@ -316,9 +312,24 @@ class TaskExecutionManager @Inject constructor(
                 )
 
                 // Store result
-                completedExecutions[execution.id] = TaskResult.Success(result)
+                val taskResult = TaskResult(
+                    taskId = execution.id,
+                    status = TaskStatus.COMPLETED,
+                    message = result.content,
+                    timestamp = endTime,
+                    durationMs = endTime - startTime,
+                    startTime = startTime,
+                    endTime = endTime,
+                    executedBy = execution.agent,
+                    originalData = execution.data,
+                    success = true,
+                    executionTimeMs = endTime - startTime,
+                    type = execution.type
+                )
 
-                i("TaskExecutionManager", "Task completed: ${execution.id}")
+                completedExecutions[execution.id] = taskResult
+
+                logger.i("TaskExecutionManager", "Task completed: ${execution.id}")
 
             } catch (e: Exception) {
                 val endTime = System.currentTimeMillis()
@@ -329,7 +340,24 @@ class TaskExecutionManager @Inject constructor(
                     completedAt = endTime,
                     errorMessage = e.message
                 )
-                completedExecutions[execution.id] = TaskResult.Failure(e)
+
+                // Store failed result
+                val taskResult = TaskResult(
+                    taskId = execution.id,
+                    status = TaskStatus.FAILED,
+                    message = e.message,
+                    timestamp = endTime,
+                    durationMs = endTime - startTime,
+                    startTime = startTime,
+                    endTime = endTime,
+                    executedBy = execution.agent,
+                    originalData = execution.data,
+                    success = false,
+                    executionTimeMs = endTime - startTime,
+                    type = execution.type
+                )
+
+                completedExecutions[execution.id] = taskResult
 
                 logger.e("TaskExecutionManager", "Task failed: ${execution.id}", e)
 
@@ -354,9 +382,9 @@ class TaskExecutionManager @Inject constructor(
         val request = AiRequest(
             query = execution.data["query"] ?: execution.type,
             type = execution.type,
-            context = execution.data.toKotlinJsonObject()
+            context = execution.data
         )
-        return auraAgent.processRequest(request, execution.agent)
+        return auraAgent.processRequest(request)
     }
 
     /**
@@ -368,12 +396,13 @@ class TaskExecutionManager @Inject constructor(
      * @return The response from the Kai agent.
      */
     private suspend fun executeWithKai(execution: TaskExecution): AgentResponse {
-        val request = AiRequest(
+        val request = AgentRequest(
             query = execution.data["query"] ?: execution.type,
             type = execution.type,
-            context = execution.data.toKotlinJsonObject()
+            context = execution.data,
+            metadata = mapOf("priority" to execution.priority.value.toString())
         )
-        return kaiAgent.processRequest(request, execution.agent)
+        return kaiAgent.processRequest(request)
     }
 
     /**
@@ -385,12 +414,13 @@ class TaskExecutionManager @Inject constructor(
      * @return The response from the Genesis agent.
      */
     private suspend fun executeWithGenesis(execution: TaskExecution): AgentResponse {
-        val request = AiRequest(
+        val request = AgentRequest(
             query = execution.data["query"] ?: execution.type,
             type = execution.type,
-            context = execution.data.toKotlinJsonObject()
+            context = execution.data,
+            metadata = mapOf("priority" to execution.priority.value.toString())
         )
-        return genesisAgent.processRequest(request, execution.agent)
+        return genesisAgent.processRequest(request)
     }
 
     /**
@@ -447,7 +477,7 @@ class TaskExecutionManager @Inject constructor(
             completedTasks = completed,
             activeTasks = active,
             queuedTasks = queued,
-            failedTasks = completedExecutions.values.count { it is TaskResult.Failure },
+            failedTasks = completedExecutions.values.count { !it.success },
             averageExecutionTimeMs = calculateAverageExecutionTime()
         )
     }
@@ -472,8 +502,7 @@ class TaskExecutionManager @Inject constructor(
     private fun calculateAverageExecutionTime(): Long {
         val executions = completedExecutions.values
         return if (executions.isNotEmpty()) {
-            executions.filterIsInstance<TaskResult.Success>().map { (it.data as AgentResponse).timestamp }.average()
-                .toLong()
+            executions.map { it.executionTimeMs }.average().toLong()
         } else 0L
     }
 
@@ -481,7 +510,7 @@ class TaskExecutionManager @Inject constructor(
      * Stops task processing and cancels all running coroutines, releasing resources used by the TaskExecutionManager.
      */
     fun cleanup() {
-        i("TaskExecutionManager", "Cleaning up TaskExecutionManager")
+        logger.i("TaskExecutionManager", "Cleaning up TaskExecutionManager")
         isProcessing = false
         scope.cancel()
     }
@@ -517,7 +546,7 @@ class TaskPriorityComparator : Comparator<TaskExecution> {
     override fun compare(t1: TaskExecution, t2: TaskExecution): Int {
         // Higher priority first, then earlier scheduled time
         return when {
-            t1.priority != t2.priority -> t2.priority.compareTo(t1.priority)
+            t1.priority.value != t2.priority.value -> t2.priority.value - t1.priority.value
             else -> t1.scheduledTime.compareTo(t2.scheduledTime)
         }
     }

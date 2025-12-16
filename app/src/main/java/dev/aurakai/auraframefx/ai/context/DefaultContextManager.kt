@@ -1,10 +1,7 @@
 package dev.aurakai.auraframefx.ai.context
 
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.context.ContextEntry
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.context.ContextManager
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.context.ContextMemory
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.memory.DefaultMemoryManager
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.memory.MemoryManager
+import dev.aurakai.auraframefx.ai.memory.DefaultMemoryManager
+import dev.aurakai.auraframefx.ai.memory.MemoryManagerInterface
 import kotlinx.coroutines.delay
 import java.util.concurrent.ConcurrentHashMap
 
@@ -13,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Manages AI context awareness and memory integration
  */
 class DefaultContextManager(
-    private val memoryManager: MemoryManager = DefaultMemoryManager()
+    private val memoryManager: MemoryManagerInterface = DefaultMemoryManager()
 ) : ContextManager {
 
     private val contextData = ConcurrentHashMap<String, Any>()

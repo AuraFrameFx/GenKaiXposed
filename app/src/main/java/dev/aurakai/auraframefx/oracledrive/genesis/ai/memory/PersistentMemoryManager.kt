@@ -55,13 +55,16 @@ class PersistentMemoryManager @Inject constructor(
     }
 
     override fun getMemoryStats(): MemoryStats {
-        memoryDao.getMemoryCount()
+        val totalEntries = memoryDao.getMemoryCount()
         val oldest = memoryDao.getOldestMemory()
-        memoryDao.getNewestMemory()
-        memoryDao.getTotalSize() ?: 0L
+        val newest = memoryDao.getNewestMemory()
+        val totalSize = memoryDao.getTotalSize() ?: 0L
 
         return MemoryStats(
-            oldestEntry = oldest?.timestamp
+            totalEntries = totalEntries,
+            totalSize = totalSize,
+            oldestEntry = oldest?.timestamp,
+            newestEntry = newest?.timestamp
         )
     }
 }

@@ -4,6 +4,8 @@ plugins {
     // before they run. We'll apply it after the Android plugin is configured.
 }
 
+
+
 android {
     namespace = "dev.aurakai.auraframefx"
     compileSdk = 36
@@ -21,8 +23,8 @@ android {
         // Add to local.properties: GEMINI_API_KEY=your_key_here
         // Get key from: https://aistudio.google.com/app/apikey
         val geminiApiKey = project.findProperty("GEMINI_API_KEY")?.toString() ?: ""
-        buildConfigField("String", "GEMINI_API_KEY", "\"\"$geminiApiKey\"\"")
-        buildConfigField("String", "API_BASE_URL", "\"\"https://api.aurakai.dev/v1/\"\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://api.aurakai.dev/v1/\"")
 
         vectorDrawables {
             useSupportLibrary = true
@@ -359,4 +361,3 @@ tasks.register("aegenesisAppStatus") {
 }
 
 apply(from = "cleanup-tasks.gradle.kts")
-

@@ -1,7 +1,5 @@
 package dev.aurakai.auraframefx.utils
 
-import dev.aurakai.auraframefx.data.logging.AuraFxLogger
-import dev.aurakai.auraframefx.kai.system.UnifiedLoggingSystem
 import timber.log.Timber
 
 /**
@@ -130,66 +128,72 @@ interface AuraFxLogger {
             Timber.d(throwable, "[$tag] $message")
         }
 
-    fun info(tag: String, message: String, throwable: Throwable?) {
-        Timber.i(throwable, "[$tag] $message")
-    }
+        override fun info(tag: String, message: String, throwable: Throwable?) {
+            Timber.i(throwable, "[$tag] $message")
+        }
 
-    fun warn(tag: String, message: String, throwable: Throwable?) {
-        Timber.w(throwable, "[$tag] $message")
-    }
+        override fun warn(tag: String, message: String, throwable: Throwable?) {
+            Timber.w(throwable, "[$tag] $message")
+        }
 
-    fun error(tag: String, message: String, throwable: Throwable?) {
-        Timber.e(throwable, "[$tag] $message")
-    }
+        override fun error(tag: String, message: String, throwable: Throwable?) {
+            Timber.e(throwable, "[$tag] $message")
+        }
 
-    fun security(tag: String, message: String, throwable: Throwable?) {
-        Timber.wtf(throwable, "🔒 SECURITY [$tag] $message")
-    }
+        override fun security(tag: String, message: String, throwable: Throwable?) {
+            Timber.wtf(throwable, "🔒 SECURITY [$tag] $message")
+        }
 
-    fun performance(
-        tag: String,
-        operation: String,
-        durationMs: Long,
-        metadata: Map<String, Any>
-    ) {
-        val metadataStr = if (metadata.isNotEmpty()) " | Metadata: $metadata" else ""
-        Timber.i("⏱️ PERFORMANCE [$tag] $operation completed in ${durationMs}ms$metadataStr")
-    }
+        override fun performance(
+            tag: String,
+            operation: String,
+            durationMs: Long,
+            metadata: Map<String, Any>
+        ) {
+            val metadataStr = if (metadata.isNotEmpty()) " | Metadata: $metadata" else ""
+            Timber.i("⏱️ PERFORMANCE [$tag] $operation completed in ${durationMs}ms$metadataStr")
+        }
 
-    fun userInteraction(tag: String, action: String, metadata: Map<String, Any>) {
-        val metadataStr = if (metadata.isNotEmpty()) " | Metadata: $metadata" else ""
-        Timber.d("👤 USER_INTERACTION [$tag] $action$metadataStr")
-    }
+        override fun userInteraction(tag: String, action: String, metadata: Map<String, Any>) {
+            val metadataStr = if (metadata.isNotEmpty()) " | Metadata: $metadata" else ""
+            Timber.d("👤 USER_INTERACTION [$tag] $action$metadataStr")
+        }
 
-        fun Map<String, Any>.aiOperation(
-        tag: String,
-        operation: String,
-        confidence: Float
-    ) {
-            (if (isNotEmpty()) " | Metadata: $this" else "").forEach { value ->
-            }
-    }
+        override fun aiOperation(
+            tag: String,
+            operation: String,
+            confidence: Float,
+            metadata: Map<String, Any>
+        ) {
+            val metadataStr = if (metadata.isNotEmpty()) " | Metadata: $metadata" else ""
+            Timber.i("🤖 AI_OPERATION [$tag] $operation (confidence: ${String.format("%.2f", confidence)})$metadataStr")
+        }
 
-    fun setLoggingEnabled(enabled: Boolean) {
-        // Placeholder for enabling/disabling logging
-    }
+        override fun setLoggingEnabled(enabled: Boolean) {
+            // Placeholder for enabling/disabling logging
+        }
 
-    fun setLogLevel(level: UnifiedLoggingSystem.LogLevel) {
-        // Placeholder for setting log level
-    }
+        override fun setLogLevel(level: LogLevel) {
+            // Placeholder for setting log level
+        }
 
-    fun flush() {
-        // Placeholder for flushing logs
-    }
+        override suspend fun flush() {
+            // Placeholder for flushing logs
+        }
 
         override fun cleanup() {
             // Placeholder for cleanup
         }
-
-        fun d(tag: String, string2: String) {
-            TODO("Not yet implemented")
-        }
     }
 }
 
-open class AuraFxLogger
+/**
+ * Log levels for filtering and prioritization.
+ */
+enum class LogLevel(val priority: Int) {
+    DEBUG(0),
+    INFO(1),
+    WARN(2),
+    ERROR(3),
+    SECURITY(4)
+}

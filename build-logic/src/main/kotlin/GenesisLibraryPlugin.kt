@@ -46,8 +46,10 @@ class GenesisLibraryPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         with(project) {
             // Apply plugins in correct order
-            pluginManager.apply("com.android.library")
+            // Note: Kotlin Android plugin applied explicitly for consistency with Hilt modules
+            // Even with built-in Kotlin, explicit plugin ensures proper Kotlin hooks
             pluginManager.apply("org.jetbrains.kotlin.android")
+            pluginManager.apply("com.android.library")
             pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
             pluginManager.apply("org.jetbrains.kotlin.plugin.serialization")
 

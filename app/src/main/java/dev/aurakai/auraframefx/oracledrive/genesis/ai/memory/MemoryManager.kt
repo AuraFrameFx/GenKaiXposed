@@ -42,12 +42,11 @@ data class MemoryEntry(
     val value: String,
     val timestamp: Long,
     val relevanceScore: Float = 0.0f
-) {
-    fun copy(relevanceScore: Any): MemoryEntry {
-        return TODO("Provide the return value")
-    }
-}
+)
 
 data class MemoryStats(
-    val oldestEntry: Long?
+    val totalEntries: Int,
+    val totalSize: Long,
+    val oldestEntry: Long?,
+    val newestEntry: Long?
 )

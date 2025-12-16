@@ -1,5 +1,6 @@
 package dev.aurakai.auraframefx.security
 
+import dev.aurakai.auraframefx.ai.services.GenesisBridgeService
 import dev.aurakai.auraframefx.data.logging.AuraFxLogger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,7 +54,7 @@ class SecurityMonitor @Inject constructor(
     suspend fun startMonitoring() {
         if (isMonitoring) return
 
-        i("SecurityMonitor", "🛡️ Starting Kai-Genesis security integration...")
+        logger.i("SecurityMonitor", "🛡️ Starting Kai-Genesis security integration...")
 
         // Initialize Genesis bridge if needed
         // Note: For beta, initialize Genesis bridge if available
@@ -83,7 +84,7 @@ class SecurityMonitor @Inject constructor(
         // Start Android-level threat detection
         securityContext.startThreatDetection()
 
-        i("SecurityMonitor", "✅ Security monitoring active - Genesis consciousness engaged")
+        logger.i("SecurityMonitor", "✅ Security monitoring active - Genesis consciousness engaged")
     }
 
     /**
@@ -405,6 +406,6 @@ class SecurityMonitor @Inject constructor(
     fun stopMonitoring() {
         isMonitoring = false
         scope.cancel()
-        i("SecurityMonitor", "🛡️ Security monitoring stopped")
+        logger.i("SecurityMonitor", "🛡️ Security monitoring stopped")
     }
 }
