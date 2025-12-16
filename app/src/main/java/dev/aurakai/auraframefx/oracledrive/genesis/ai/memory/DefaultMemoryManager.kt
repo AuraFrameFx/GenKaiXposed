@@ -68,10 +68,7 @@ class DefaultMemoryManager : MemoryManager {
         val timestamps = entries.map { it.timestamp }
 
         return MemoryStats(
-            totalEntries = memories.size,
-            totalSize = calculateTotalSize(),
-            oldestEntry = timestamps.minOrNull(),
-            newestEntry = timestamps.maxOrNull()
+            oldestEntry = timestamps.minOrNull()
         )
     }
 

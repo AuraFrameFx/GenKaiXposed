@@ -37,6 +37,36 @@ allprojects {
     group = "dev.aurakai.auraframefx"
     version = "0.1.0"
 
+    // CRITICAL: Force dependency versions to match libs.versions.toml
+    configurations.all {
+        resolutionStrategy {
+            // Force Kotlin stdlib to 2.3.0-RC2 (prevent transitive downgrades)
+            force(
+                "org.jetbrains.kotlin:kotlin-stdlib:2.3.0-RC2",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.0-RC2",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.0-RC2",
+                "org.jetbrains.kotlin:kotlin-stdlib-common:2.3.0-RC2",
+                "org.jetbrains.kotlin:kotlin-reflect:2.3.0-RC2"
+            )
+
+            // Force Coroutines to 1.10.2 (prevent transitive downgrades)
+            force(
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
+            )
+
+            // Force Hilt to 2.57.2
+            force(
+                "com.google.dagger:hilt-android:2.57.2",
+                "com.google.dagger:hilt-core:2.57.2",
+                "com.google.dagger:hilt-android-compiler:2.57.2"
+            )
+
+            // Prefer modules from libs.versions.toml over transitive dependencies
+            preferProjectModules()
+        }
+    }
 
     // CRITICAL: Enforce JVM 24 target consistency across ALL subprojects
     tasks.withType<JavaCompile>().configureEach {

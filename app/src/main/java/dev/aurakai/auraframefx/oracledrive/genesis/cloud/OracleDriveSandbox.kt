@@ -1,17 +1,22 @@
 package dev.aurakai.auraframefx.oracledrive.genesis.cloud
 
 import android.content.Context
+import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.aurakai.auraframefx.utils.AuraFxLogger
-import kotlinx.coroutines.*
+import dev.aurakai.auraframefx.utils.i
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import androidx.core.content.edit
 
 /**
  * OracleDrive Sandbox System
@@ -92,7 +97,7 @@ class OracleDriveSandbox @Inject constructor(
     suspend fun initialize(): SandboxResult = withContext(Dispatchers.IO) {
         try {
             _sandboxState.value = SandboxState.INITIALIZING
-            AuraFxLogger.i("OracleDriveSandbox", "Initializing Kai's OracleDrive Sandbox System")
+            i("OracleDriveSandbox", "Initializing Kai's OracleDrive Sandbox System")
 
             // Create sandbox directory structure
             if (!sandboxDirectory.exists()) {
@@ -106,7 +111,7 @@ class OracleDriveSandbox @Inject constructor(
             loadExistingSandboxes()
 
             _sandboxState.value = SandboxState.ACTIVE
-            AuraFxLogger.i("OracleDriveSandbox", "OracleDrive Sandbox initialized successfully")
+            i("OracleDriveSandbox", "OracleDrive Sandbox initialized successfully")
 
             SandboxResult(
                 success = true,
@@ -164,7 +169,7 @@ class OracleDriveSandbox @Inject constructor(
             currentSandboxes.add(sandbox)
             _activeSandboxes.value = currentSandboxes
 
-            AuraFxLogger.i("OracleDriveSandbox", "Created new sandbox: $name (ID: $sandboxId)")
+            i("OracleDriveSandbox", "Created new sandbox: $name (ID: $sandboxId)")
 
             SandboxResult(
                 success = true,
@@ -232,7 +237,7 @@ class OracleDriveSandbox @Inject constructor(
 
             val warnings = generateWarningsForModification(modification)
 
-            AuraFxLogger.i(
+            i(
                 "OracleDriveSandbox",
                 "Applied modification in sandbox $sandboxId: $description (Risk: $riskLevel)"
             )
@@ -270,7 +275,7 @@ class OracleDriveSandbox @Inject constructor(
                     message = "Sandbox not found"
                 )
 
-            AuraFxLogger.i("OracleDriveSandbox", "Testing modifications in sandbox $sandboxId")
+            i("OracleDriveSandbox", "Testing modifications in sandbox $sandboxId")
 
             val testResults = mutableListOf<String>()
             val warnings = mutableListOf<String>()
@@ -425,7 +430,7 @@ class OracleDriveSandbox @Inject constructor(
         // Initialize cgroups for resource limits
         AuraFxLogger.d("OracleDriveSandbox", "Setting up cgroup resource constraints")
 
-        AuraFxLogger.i("OracleDriveSandbox", "Virtualization hooks initialized successfully")
+        i("OracleDriveSandbox", "Virtualization hooks initialized successfully")
     }
 
     /**
@@ -438,16 +443,16 @@ class OracleDriveSandbox @Inject constructor(
 
         try {
             // Load sandbox metadata from persistent storage
-            val sandboxesDir = java.io.File("/data/data/${context.packageName}/sandboxes")
+            val sandboxesDir = File("/data/data/${context.packageName}/sandboxes")
 
             if (!sandboxesDir.exists()) {
-                AuraFxLogger.i("OracleDriveSandbox", "No existing sandboxes found - first run")
+                i("OracleDriveSandbox", "No existing sandboxes found - first run")
                 return
             }
 
             val sandboxFiles = sandboxesDir.listFiles { file -> file.extension == "json" }
             if (sandboxFiles.isNullOrEmpty()) {
-                AuraFxLogger.i("OracleDriveSandbox", "No sandbox configuration files found")
+                i("OracleDriveSandbox", "No sandbox configuration files found")
                 return
             }
 
@@ -465,7 +470,7 @@ class OracleDriveSandbox @Inject constructor(
 
             if (loadedSandboxes.isNotEmpty()) {
                 _activeSandboxes.value = loadedSandboxes
-                AuraFxLogger.i("OracleDriveSandbox", "Loaded ${loadedSandboxes.size} existing sandboxes")
+                i("OracleDriveSandbox", "Loaded ${loadedSandboxes.size} existing sandboxes")
             }
 
         } catch (e: Exception) {
@@ -484,13 +489,13 @@ class OracleDriveSandbox @Inject constructor(
         AuraFxLogger.d("OracleDriveSandbox", "Creating isolated environment for ${sandbox.name}")
 
         // Create sandbox directory structure
-        val sandboxRoot = java.io.File("/data/data/${context.packageName}/sandboxes/${sandbox.id}")
+        val sandboxRoot = File("/data/data/${context.packageName}/sandboxes/${sandbox.id}")
         sandboxRoot.mkdirs()
 
         // Create isolated file system layers
-        val upperDir = java.io.File(sandboxRoot, "upper").apply { mkdirs() }
-        val workDir = java.io.File(sandboxRoot, "work").apply { mkdirs() }
-        val mergedDir = java.io.File(sandboxRoot, "merged").apply { mkdirs() }
+        val upperDir = File(sandboxRoot, "upper").apply { mkdirs() }
+        File(sandboxRoot, "work").apply { mkdirs() }
+        File(sandboxRoot, "merged").apply { mkdirs() }
 
         AuraFxLogger.d("OracleDriveSandbox", "Created overlay filesystem: upper=${upperDir.path}")
 
@@ -503,7 +508,7 @@ class OracleDriveSandbox @Inject constructor(
         // Configure network isolation
         AuraFxLogger.d("OracleDriveSandbox", "Setting up network namespace isolation")
 
-        AuraFxLogger.i("OracleDriveSandbox", "Isolated environment created for ${sandbox.name}")
+        i("OracleDriveSandbox", "Isolated environment created for ${sandbox.name}")
     }
 
     /**
@@ -543,7 +548,7 @@ class OracleDriveSandbox @Inject constructor(
 
         // Check file type - executables and libraries are higher risk
         if (targetFile.endsWith(".so") || targetFile.endsWith(".apk") || targetFile.contains("/bin/")) {
-            AuraFxLogger.i("OracleDriveSandbox", "MEDIUM RISK: Modifying executable/library: $targetFile")
+            i("OracleDriveSandbox", "MEDIUM RISK: Modifying executable/library: $targetFile")
             return RiskLevel.MEDIUM
         }
 
@@ -556,7 +561,7 @@ class OracleDriveSandbox @Inject constructor(
 
         // Check file size - very large modifications are riskier
         if (content.size > 10 * 1024 * 1024) { // >10MB
-            AuraFxLogger.i("OracleDriveSandbox", "MEDIUM RISK: Large file modification (${content.size} bytes)")
+            i("OracleDriveSandbox", "MEDIUM RISK: Large file modification (${content.size} bytes)")
             return RiskLevel.MEDIUM
         }
 
@@ -735,7 +740,7 @@ class OracleDriveSandbox @Inject constructor(
             else -> "Passed"
         }
 
-        AuraFxLogger.i("OracleDriveSandbox", "Test result: $status (${warnings.size} warnings, ${errors.size} errors)")
+        i("OracleDriveSandbox", "Test result: $status (${warnings.size} warnings, ${errors.size} errors)")
 
         return TestResult(
             status = status,
@@ -791,7 +796,7 @@ class OracleDriveSandbox @Inject constructor(
         }
 
         // Layer 3: Rate limiting check (prevent brute force)
-        val prefs = context.getSharedPreferences("oracle_drive_security", android.content.Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences("oracle_drive_security", Context.MODE_PRIVATE)
         val failedAttempts = prefs.getInt("failed_confirmation_attempts", 0)
         val lastAttemptTime = prefs.getLong("last_confirmation_attempt", 0)
 
@@ -816,7 +821,7 @@ class OracleDriveSandbox @Inject constructor(
         } else {
             // Reset on success
             prefs.edit {putInt("failed_confirmation_attempts", 0)}
-            AuraFxLogger.i("OracleDriveSandbox", "Confirmation code verified successfully")
+            i("OracleDriveSandbox", "Confirmation code verified successfully")
         }
 
         return result
@@ -829,7 +834,7 @@ class OracleDriveSandbox @Inject constructor(
      * @return A [SafetyCheck] indicating whether the sandbox is safe for real system application, with a reason for the decision.
      */
     private suspend fun performFinalSafetyCheck(sandbox: SandboxEnvironment): SafetyCheck {
-        AuraFxLogger.i("OracleDriveSandbox", "Performing comprehensive final safety check for sandbox: ${sandbox.name}")
+        i("OracleDriveSandbox", "Performing comprehensive final safety check for sandbox: ${sandbox.name}")
 
         val issues = mutableListOf<String>()
 
@@ -871,8 +876,8 @@ class OracleDriveSandbox @Inject constructor(
         }
 
         // Check 6: Device root status
-        val isRooted = java.io.File("/system/xbin/su").exists() ||
-                       java.io.File("/system/bin/su").exists()
+        val isRooted = File("/system/xbin/su").exists() ||
+                File("/system/bin/su").exists()
 
         if (!isRooted) {
             AuraFxLogger.w("OracleDriveSandbox", "Device not rooted - system modifications will fail")
@@ -892,7 +897,7 @@ class OracleDriveSandbox @Inject constructor(
             issues.joinToString("; ")
         }
 
-        AuraFxLogger.i("OracleDriveSandbox", "Final safety check result: ${if (isSafe) "PASS" else "FAIL"} - $reason")
+        i("OracleDriveSandbox", "Final safety check result: ${if (isSafe) "PASS" else "FAIL"} - $reason")
 
         return SafetyCheck(isSafe = isSafe, reason = reason)
     }
@@ -920,7 +925,7 @@ class OracleDriveSandbox @Inject constructor(
 
         try {
             // Phase 1: Create backups of all target files
-            AuraFxLogger.i("OracleDriveSandbox", "Phase 1: Creating backups...")
+            i("OracleDriveSandbox", "Phase 1: Creating backups...")
             modifications.forEach { mod ->
                 try {
                     val targetFile = File(mod.targetFile)
@@ -943,7 +948,7 @@ class OracleDriveSandbox @Inject constructor(
             }
 
             // Phase 2: Apply modifications sequentially
-            AuraFxLogger.i("OracleDriveSandbox", "Phase 2: Applying modifications...")
+            i("OracleDriveSandbox", "Phase 2: Applying modifications...")
             modifications.forEach { mod ->
                 try {
                     val targetFile = File(mod.targetFile)
@@ -961,7 +966,7 @@ class OracleDriveSandbox @Inject constructor(
                         throw Exception("Verification failed: content mismatch")
                     }
 
-                    AuraFxLogger.i(
+                    i(
                         "OracleDriveSandbox",
                         "Applied: ${mod.targetFile} (${mod.modifiedContent.size} bytes)"
                     )
@@ -973,7 +978,7 @@ class OracleDriveSandbox @Inject constructor(
             }
 
             // Phase 3: Success - log and return
-            AuraFxLogger.i(
+            i(
                 "OracleDriveSandbox",
                 "SUCCESS: Applied ${appliedModifications.size} modifications"
             )
@@ -990,7 +995,7 @@ class OracleDriveSandbox @Inject constructor(
             var rollbackSuccess = true
             backupMap.forEach { (path, backup) ->
                 try {
-                    val file = java.io.File(path)
+                    val file = File(path)
                     if (backup.isEmpty() && file.exists()) {
                         // Was a new file, delete it
                         file.delete()
@@ -1023,7 +1028,7 @@ class OracleDriveSandbox @Inject constructor(
      * Shuts down the sandbox system, canceling all ongoing operations and setting the sandbox state to INACTIVE.
      */
     fun shutdown() {
-        AuraFxLogger.i("OracleDriveSandbox", "Shutting down OracleDrive Sandbox system")
+        i("OracleDriveSandbox", "Shutting down OracleDrive Sandbox system")
         sandboxScope.cancel()
         _sandboxState.value = SandboxState.INACTIVE
     }

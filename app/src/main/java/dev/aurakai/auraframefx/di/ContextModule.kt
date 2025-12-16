@@ -1,18 +1,20 @@
 package dev.aurakai.auraframefx.di
 
-import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.context.ContextManager
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.context.DefaultContextManager
+import dev.aurakai.auraframefx.ai.context.ContextManager
+import dev.aurakai.auraframefx.utils.AuraFxLogger
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class ContextModule {
+object ContextModule {
 
-    @Binds
+    @Provides
     @Singleton
-    abstract fun bindContextManager(impl: DefaultContextManager): ContextManager
+    fun provideContextManager(logger: AuraFxLogger): ContextManager {
+        return ContextManager(logger)
+    }
 }

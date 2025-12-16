@@ -9,10 +9,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import timber.log.Timber
 
-private val AgentType.Companion.USER: Any
-    get() {
-        TODO()
-    }
+interface Agent {
+    fun getName(): String?
+    fun getType(): AgentType
+    suspend fun processRequest(request: AiRequest, context: String): AgentResponse
+    fun processRequestFlow(request: AiRequest): Flow<AgentResponse>
+    fun InteractionResponse(
+        content: String,
+        success: Boolean,
+        timestamp: Long,
+        metadata: Map<String, Any>
+    ): InteractionResponse
+}
 
 /**
  * Base implementation of the [Agent] interface. Subclasses should override
@@ -40,7 +48,7 @@ abstract class BaseAgent(
         AgentType.valueOf(agentTypeStr.uppercase())
     } catch (e: IllegalArgumentException) {
         Timber.w(e, "Invalid agent type string: %s, defaulting to USER", agentTypeStr)
-        AgentType.USER
+        AgentType.SYSTEM
     }
 
     /**
@@ -64,7 +72,7 @@ abstract class BaseAgent(
         timestamp: Long,
         metadata: Map<String, Any>
     ): InteractionResponse {
-         return InteractionResponse(
+        return InteractionResponse(
             content = content,
             metadata = metadata.toKotlinJsonObject(),
             timestamp = timestamp
@@ -94,10 +102,10 @@ abstract class BaseAgent(
     )
 
     /**
- * Provides the agent's continuous memory storage; override to return a concrete memory object.
- *
- * @return The continuous memory object used by the agent, or `null` if the agent has no continuous memory.
- */
+     * Provides the agent's continuous memory storage; override to return a concrete memory object.
+     *
+     * @return The continuous memory object used by the agent, or `null` if the agent has no continuous memory.
+     */
     fun getContinuousMemory(): Any? = null
 
     /**
@@ -112,10 +120,10 @@ abstract class BaseAgent(
     )
 
     /**
- * Provides the agent's recorded learning history.
- *
- * @return A list of learning-history entries; empty by default. Override to supply real history.
- */
+     * Provides the agent's recorded learning history.
+     *
+     * @return A list of learning-history entries; empty by default. Override to supply real history.
+     */
     open fun getLearningHistory(): List<String> = emptyList()
 
     /**
@@ -137,13 +145,4 @@ abstract class BaseAgent(
     open fun initializeAdaptiveProtection() {
         Timber.d("initializeAdaptiveProtection called for %s", agentName)
     }
-}
-
-private fun AgentType.Companion.valueOf(uppercase: String): AgentType {
-    TODO("Not yet implemented")
-}
-
-class AgentType {
-    companion object
-
 }

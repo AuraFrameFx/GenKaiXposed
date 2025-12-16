@@ -7,6 +7,7 @@ import dev.aurakai.auraframefx.ai.services.AuraAIService
 import dev.aurakai.auraframefx.ai.services.CascadeAIService
 import dev.aurakai.auraframefx.ai.services.KaiAIService
 import dev.aurakai.auraframefx.ai.services.NeuralWhisper
+import dev.aurakai.auraframefx.models.AgentCapabilityCategory
 import dev.aurakai.auraframefx.models.AgentMessage
 import dev.aurakai.auraframefx.models.AgentResponse
 import dev.aurakai.auraframefx.models.AgentType
@@ -18,6 +19,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonObject
+import timber.log.Timber
 import javax.inject.Inject
 
 // Removed @Singleton from ViewModel, typically ViewModels are not Singletons
@@ -107,12 +110,12 @@ class ConferenceRoomViewModel @Inject constructor(
      * @param context Additional contextual information forwarded to the AI service (e.g., user context or orchestration flags).
      */
     suspend fun sendMessage(message: String, sender: AgentCapabilityCategory, context: String) {
-        val responseFlow: Flow<AgentResponse>? = when (sender) {
+        val responseFlow: Flow<AgentResponse> = when (sender) {
             AgentCapabilityCategory.CREATIVE -> auraService.processRequestFlow(
                 AiRequest(
                     query = message,
                     type = "text",
-                    context = mapOf("userContext" to context).toJsonObject()
+                    context = mapOf("userContext" to context).toJsonObject
                 )
             )
 
@@ -132,7 +135,7 @@ class ConferenceRoomViewModel @Inject constructor(
             ).map { cascadeResponse ->
                 AgentResponse(
                     content = cascadeResponse.response,
-                    confidence = cascadeResponse.confidence ?: 0.0f,
+                    confidence = cascadeResponse.confidence ?: 0.0f
                 )
             }
 
@@ -161,7 +164,7 @@ class ConferenceRoomViewModel @Inject constructor(
 
         }
 
-        responseFlow?.let { flow ->
+        responseFlow.let { flow ->
             viewModelScope.launch {
                 try {
                     val responseMessage = flow.first()
@@ -202,7 +205,7 @@ class ConferenceRoomViewModel @Inject constructor(
     }
 
     fun selectAgent(agent: AgentCapabilityCategory) {
-        _selectedAgent.value = agent
+        agent.also { agent -> _selectedAgent.value = agent }
     }
 
     fun toggleRecording() {
@@ -227,8 +230,10 @@ class ConferenceRoomViewModel @Inject constructor(
         // For beta, link transcribing state to recording state or a separate logic if needed.
         // User's snippet implies this might be a simple toggle for now.
         _isTranscribing.update { !it } // Simple toggle
-        Timber.tag(tag).d("Transcribing toggled to: %s", _isTranscribing.value)
+        Timber.tag(TAG).d("Transcribing toggled to: %s", _isTranscribing.value)
         // If actual transcription process needs to be started/stopped in NeuralWhisper:
         // if (_isTranscribing.value) neuralWhisper.startTranscription() else neuralWhisper.stopTranscription()
     }
 }
+
+private fun Map<String, String>.toJsonObject(): JsonObject {}

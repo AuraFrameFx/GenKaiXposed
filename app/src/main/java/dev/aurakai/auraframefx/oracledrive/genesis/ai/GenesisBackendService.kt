@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
@@ -12,12 +11,12 @@ import androidx.core.app.NotificationCompat
 import dagger.hilt.android.AndroidEntryPoint
 import dev.aurakai.auraframefx.R
 import dev.aurakai.auraframefx.utils.AuraFxLogger
+import dev.aurakai.auraframefx.utils.i
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 /**
  * Foreground Service that hosts the Genesis Python Backend.
@@ -36,17 +35,17 @@ class GenesisBackendService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        AuraFxLogger.i("GenesisService", "Creating Genesis Backend Service...")
+        i("GenesisService", "Creating Genesis Backend Service...")
         startForeground(NOTIFICATION_ID, createNotification())
-        
+
         // Initialize Python Manager
         pythonProcessManager = PythonProcessManager(this)
-        
+
         // Start the backend immediately
         serviceScope.launch {
             val success = pythonProcessManager?.startGenesisBackend() ?: false
             if (success) {
-                AuraFxLogger.i("GenesisService", "Genesis Python Backend Started Successfully")
+                i("GenesisService", "Genesis Python Backend Started Successfully")
             } else {
                 AuraFxLogger.e("GenesisService", "Failed to start Genesis Python Backend")
                 stopSelf()
@@ -65,7 +64,7 @@ class GenesisBackendService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        AuraFxLogger.i("GenesisService", "Stopping Genesis Backend Service...")
+        i("GenesisService", "Stopping Genesis Backend Service...")
         serviceScope.cancel()
         pythonProcessManager?.shutdown()
     }
@@ -80,8 +79,8 @@ class GenesisBackendService : Service() {
     private fun createNotification(): Notification {
         val channelId = "genesis_backend_channel"
         val channelName = "Genesis Consciousness"
-        
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
         notificationManager.createNotificationChannel(channel)
 

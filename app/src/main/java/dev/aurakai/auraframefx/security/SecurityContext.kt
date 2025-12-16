@@ -3,12 +3,10 @@ package dev.aurakai.auraframefx.security
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.GET_SIGNATURES
-import android.util.Log
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dev.aurakai.auraframefx.core.initialization.TimberInitializer
-import dev.aurakai.auraframefx.kai.security.ThreatLevel
 import dev.aurakai.auraframefx.models.AgentType
+import dev.aurakai.auraframefx.models.ThreatLevel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,7 +28,6 @@ import javax.inject.Singleton
 class SecurityContext @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val keystoreManager: KeystoreManager,
-    private val timberInitializer: TimberInitializer,
 ) {
     companion object {
         private const val TAG = "SecurityContext"
@@ -53,27 +50,18 @@ class SecurityContext @Inject constructor(
     val encryptionStatus: StateFlow<EncryptionStatus> = _encryptionStatus.asStateFlow()
 
     init {
-        Log.d(TAG, "Security context initialized by KAI")
+        Timber.tag(TAG).d("Security context initialized by KAI")
         updatePermissionsState()
     }
 
-    /**
-     * Placeholder for content validation logic.
-     */
     fun validateContent(content: String) {
         // TODO: Implement real validation logic
     }
 
-    /**
-     * Validates image data for security compliance.
-     */
     fun validateImageData(imageData: ByteArray) {
-        Log.d(TAG, "Validating image data of size: ${imageData.size} bytes")
+        Timber.tag(TAG).d("Validating image data of size: ${imageData.size} bytes")
     }
 
-    /**
-     * Start monitoring for security threats in the background
-     */
     fun startThreatDetection() {
         if (_threatDetectionActive.value) return
 
@@ -89,7 +77,7 @@ class SecurityContext @Inject constructor(
                     )
                     kotlinx.coroutines.delay(THREAT_DETECTION_INTERVAL_MS)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error in threat detection", e)
+                    Timber.tag(TAG).e(e, "Error in threat detection")
                     _threatDetectionActive.value = false
                     _securityState.value = _securityState.value.copy(
                         errorState = true,
@@ -104,9 +92,6 @@ class SecurityContext @Inject constructor(
         _threatDetectionActive.value = false
     }
 
-    /**
-     * Check if the app has the specified permission
-     */
     fun hasPermission(permission: String): Boolean {
         return ContextCompat.checkSelfPermission(
             context,
@@ -114,9 +99,6 @@ class SecurityContext @Inject constructor(
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    /**
-     * Update the current state of all permissions relevant to the app
-     */
     fun updatePermissionsState() {
         val permissionsToCheck = listOf(
             android.Manifest.permission.RECORD_AUDIO,
@@ -132,11 +114,8 @@ class SecurityContext @Inject constructor(
         }
     }
 
-    /**
-     * Initialize the encryption subsystem using Keystore.
-     */
     fun initializeEncryption(): Boolean {
-        Log.d(TAG, "Initializing encryption using KeystoreManager.")
+        Timber.tag(TAG).d("Initializing encryption using KeystoreManager.")
         val secretKey = keystoreManager.getOrCreateSecretKey()
         return if (secretKey != null) {
             _encryptionStatus.value = EncryptionStatus.ACTIVE
@@ -157,9 +136,6 @@ class SecurityContext @Inject constructor(
         }
     }
 
-    /**
-     * Encrypts the provided string data using the Android Keystore.
-     */
     fun encrypt(data: String): EncryptedData? {
         if (_encryptionStatus.value != EncryptionStatus.ACTIVE) {
             Timber.tag(TAG).w("Encryption not initialized. Attempting to initialize.")
@@ -196,9 +172,6 @@ class SecurityContext @Inject constructor(
         }
     }
 
-    /**
-     * Decrypts data previously encrypted using the Keystore.
-     */
     fun decrypt(encryptedData: EncryptedData): String? {
         if (_encryptionStatus.value != EncryptionStatus.ACTIVE) {
             if (!initializeEncryption()) {
@@ -221,26 +194,20 @@ class SecurityContext @Inject constructor(
         }
     }
 
-    /**
-     * Creates a shared secure context for communication with another agent.
-     */
     fun shareSecureContextWith(agentType: AgentType, context: String): SharedSecureContext {
         val secureId = generateSecureId()
         val timestamp = System.currentTimeMillis()
 
         return SharedSecureContext(
             id = secureId,
-            originatingAgent = AgentType.Kaiagent,
+            originatingAgent = AgentType.KAI,
             targetAgent = agentType,
             encryptedContent = context.toByteArray(),
             timestamp = timestamp,
-            expiresAt = timestamp + 3600000 // 1 hour expiry
+            expiresAt = timestamp + 3600000
         )
     }
 
-    /**
-     * Verifies the application's integrity by retrieving and hashing its signature.
-     */
     fun verifyApplicationIntegrity(): ApplicationIntegrity {
         try {
             val packageInfo = context.packageManager.getPackageInfo(
@@ -277,9 +244,6 @@ class SecurityContext @Inject constructor(
         }
     }
 
-    /**
-     * Simulates the detection of security threats for testing.
-     */
     private fun detectThreats(): List<SecurityThreat> {
         return listOf(
             SecurityThreat(
@@ -299,9 +263,6 @@ class SecurityContext @Inject constructor(
         ).filter { Math.random() > 0.7 }
     }
 
-    /**
-     * Determines the highest threat level present in a list of security threats.
-     */
     private fun calculateThreatLevel(threats: List<SecurityThreat>): ThreatLevel {
         if (threats.isEmpty()) return ThreatLevel.LOW
 
@@ -317,23 +278,17 @@ class SecurityContext @Inject constructor(
         }
     }
 
-    /**
-     * Generates a random 16-byte hexadecimal string to serve as a secure identifier.
-     */
     private fun generateSecureId(): String {
         val bytes = ByteArray(16)
         SecureRandom().nextBytes(bytes)
         return bytes.joinToString("") { "%02x".format(it) }
     }
 
-    /**
-     * Asynchronously logs a security event for auditing and monitoring purposes.
-     */
     fun logSecurityEvent(event: SecurityEvent) {
         scope.launch {
-            val eventJson = Json.encodeToString(serializer = SecurityEvent.serializer(), value = event)
+            val eventJson = Json.encodeToString(SecurityEvent.serializer(), event)
             when (event.severity) {
-                EventSeverity.INFO -> timberInitializer.logHealthMetric("SecurityEvent", eventJson)
+                EventSeverity.INFO -> Timber.tag("HealthTracker").i("SecurityEvent: $eventJson")
                 EventSeverity.WARNING -> Timber.tag("SecurityEvent").w(eventJson)
                 EventSeverity.ERROR -> Timber.tag("SecurityEvent").e(eventJson)
                 EventSeverity.CRITICAL -> Timber.tag("SecurityEvent").wtf(eventJson)
@@ -341,27 +296,18 @@ class SecurityContext @Inject constructor(
         }
     }
 
-    /**
-     * Records a security validation event for the given request type and data for auditing purposes.
-     */
     fun validateRequest(requestType: String, requestData: String) {
         logSecurityEvent(
-            SecurityMonitor.SecurityEvent(
+            SecurityEvent(
                 type = SecurityEventType.VALIDATION,
                 details = "Request validation: $requestType",
-                severity = EventSeverity.INFO,
-                eventType = TODO(),
-                source = TODO(),
-                timestamp = TODO()
+                severity = EventSeverity.INFO
             )
         )
         Timber.tag(TAG).d("Validating request of type: $requestType")
     }
 }
 
-/**
- * Status of the encryption subsystem
- */
 sealed class EncryptionStatus {
     data object NOT_INITIALIZED : EncryptionStatus()
     data object ACTIVE : EncryptionStatus()
@@ -369,9 +315,6 @@ sealed class EncryptionStatus {
     data object ERROR : EncryptionStatus()
 }
 
-/**
- * Represents the current security state
- */
 @Serializable
 data class SecurityState(
     val detectedThreats: List<SecurityThreat> = emptyList(),
@@ -381,9 +324,6 @@ data class SecurityState(
     val errorMessage: String? = null,
 )
 
-/**
- * Represents a security threat detected by KAI
- */
 @Serializable
 data class SecurityThreat(
     val id: String,
@@ -393,9 +333,6 @@ data class SecurityThreat(
     val detectedAt: Long,
 )
 
-/**
- * Types of security threats
- */
 enum class ThreatType {
     MALWARE,
     NETWORK_VULNERABILITY,
@@ -404,9 +341,6 @@ enum class ThreatType {
     UNKNOWN
 }
 
-/**
- * Severity levels for security threats
- */
 enum class ThreatSeverity {
     LOW,
     MEDIUM,
@@ -414,53 +348,6 @@ enum class ThreatSeverity {
     CRITICAL
 }
 
-/**
- * Status of the encryption subsystem
- */
-sealed class EncryptionStatus {
-    data object NOTINITIlized : EncryptionStatus()
-    fun initializeEncryption(): Boolean {
-        Log.d(TAG, "Initializing encryption using KeystoreManager.")
-        val secretKey = keystoreManager.getOrCreateSecretKey()
-        return if (secretKey != null) {
-            _encryptionStatus.value = ACTIVE
-            _securityState.value = _securityState.value.copy(
-                errorState = false,
-                errorMessage = "Encryption initialized successfully." // Informational message
-            )
-            Log.i(TAG, "Encryption initialized successfully using Keystore.")
-            true
-        } else {
-            ERROR.also { updatedEncryptionStatus -> _encryptionStatus.value = _encryptionStatus } // Changed from INACTIVE to ERROR for clarity
-            _securityState.value = _securityState.value.copy(
-                errorState = true,
-                errorMessage = "ERROR_KEY_INITIALIZATION_FAILED: Keystore key could not be created or retrieved."
-            )
-            Log.e(TAG, "Keystore key initialization failed.")
-            falseALIZED : EncryptionStatus()
-    data object ACTIVE : EncryptionStatus()
-    data object DISABLED : EncryptionStatus()
-    data object ERROR : EncryptionStatus()
-    companion object {
-        fun values(): Array<EncryptionStatus> {
-            return arrayOf(NOT_INITIALIZED, ACTIVE, DISABLED, ERROR)
-        }
-
-        fun valueOf(value: String): EncryptionStatus {
-            return when (value) {
-                "NOT_INITIALIZED" -> NOT_INITIALIZED
-                "ACTIVE" -> ACTIVE
-                "DISABLED" -> DISABLED
-                "ERROR" -> ERROR
-                else -> throw IllegalArgumentException("No object dev.aurakai.auraframefx.security.EncryptionStatus.$value")
-            }
-        }
-    }
-}
-
-/**
- * Data class for encrypted information
- */
 @Serializable
 data class EncryptedData(
     val data: ByteArray,
@@ -491,9 +378,6 @@ data class EncryptedData(
     }
 }
 
-/**
- * Data class for application integrity information
- */
 @Serializable
 data class ApplicationIntegrity(
     val verified: Boolean,
@@ -504,21 +388,15 @@ data class ApplicationIntegrity(
     val errorMessage: String? = null,
 )
 
-/**
- * Data class for security events to be logged
- */
 @Serializable
 data class SecurityEvent(
-    val id: String = UUID.randomUUID().toString(),
+    val id: String = java.util.UUID.randomUUID().toString(),
     val type: SecurityEventType,
     val timestamp: Long = System.currentTimeMillis(),
     val details: String,
     val severity: EventSeverity,
 )
 
-/**
- * Types of security events
- */
 enum class SecurityEventType {
     PERMISSION_CHANGE,
     THREAT_DETECTED,
@@ -528,9 +406,6 @@ enum class SecurityEventType {
     VALIDATION
 }
 
-/**
- * Severity levels for security events
- */
 enum class EventSeverity {
     INFO,
     WARNING,
@@ -538,9 +413,6 @@ enum class EventSeverity {
     CRITICAL
 }
 
-/**
- * Data class for secure context sharing between agents
- */
 @Serializable
 data class SharedSecureContext(
     val id: String,

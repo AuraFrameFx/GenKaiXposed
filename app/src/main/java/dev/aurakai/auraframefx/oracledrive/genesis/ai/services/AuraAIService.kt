@@ -25,8 +25,7 @@ data class ThemeConfiguration(
     val secondaryColor: String,
     val backgroundColor: String,
     val textColor: String,
-    val style: String,
-    val animationConfig: Map<String, Any> = emptyMap()
+    val style: String
 )
 
 /**

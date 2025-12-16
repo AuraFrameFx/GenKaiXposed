@@ -54,16 +54,16 @@ open class OracleDriveAgent @Inject constructor(
 
     override fun iRequest(query: String, type: String, context: Map<String, String>) {
         Timber.d("OracleDrive: iRequest - query=$query, type=$type")
-        
+
         scope.launch {
              processRequest(
-                AiRequest(
-                    query = query,
-                    type = type,
-                    context = context.toKotlinJsonObject()
-                ),
-                context.toString()
-            )
+                 AiRequest(
+                     query = query,
+                     type = type,
+                     context = context.toKotlinJsonObject()
+                 ),
+                 context.toString(),
+             )
         }
 
         // Additional synchronous handling if needed

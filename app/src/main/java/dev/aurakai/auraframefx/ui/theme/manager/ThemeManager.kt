@@ -6,6 +6,7 @@ import dev.aurakai.auraframefx.ui.theme.model.CyberpunkTheme
 import dev.aurakai.auraframefx.ui.theme.model.ForestTheme
 import dev.aurakai.auraframefx.ui.theme.model.SolarFlareTheme
 import dev.aurakai.auraframefx.utils.AuraFxLogger
+import dev.aurakai.auraframefx.utils.i
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -80,7 +81,7 @@ open class ThemeManager @Inject constructor(
             // 3. Apply the theme through system service
             applySystemTheme(themeToApply)
 
-            AuraFxLogger.i(
+            i(
                 TAG,
                 "Successfully applied theme '${themeToApply.name}'"
             )
@@ -118,7 +119,7 @@ open class ThemeManager @Inject constructor(
             // Apply system overlay colors via OracleDrive (if rooted)
             applySystemOverlayTheme(theme)
 
-            AuraFxLogger.i(TAG, "System-level theme applied successfully: ${theme.name}")
+            i(TAG, "System-level theme applied successfully: ${theme.name}")
 
         } catch (e: Exception) {
             AuraFxLogger.e(TAG, "Failed to apply system-level theme", e)
@@ -191,7 +192,7 @@ open class ThemeManager @Inject constructor(
             }
 
             applySystemTheme(themeToApply)
-            AuraFxLogger.i(TAG, "Successfully applied theme '${themeToApply.name}'")
+            i(TAG, "Successfully applied theme '${themeToApply.name}'")
 
         } catch (e: Exception) {
             AuraFxLogger.e(TAG, "Failed to apply theme: $themeName", e)

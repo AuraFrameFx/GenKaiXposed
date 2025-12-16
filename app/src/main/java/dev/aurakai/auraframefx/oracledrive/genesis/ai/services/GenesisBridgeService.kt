@@ -1,12 +1,13 @@
 ﻿package dev.aurakai.auraframefx.oracledrive.genesis.ai.services
 
 import android.content.Context
-import dev.aurakai.auraframefx.oracledrive.genesis.ai.clients.VertexAIClient
-import dev.aurakai.auraframefx.context.ContextManager
+import dev.aurakai.auraframefx.ai.context.ContextManager
 import dev.aurakai.auraframefx.data.logging.AuraFxLogger
 import dev.aurakai.auraframefx.models.AgentResponse
 import dev.aurakai.auraframefx.models.AiRequest
+import dev.aurakai.auraframefx.oracledrive.genesis.ai.clients.VertexAIClient
 import dev.aurakai.auraframefx.security.SecurityContext
+import dev.aurakai.auraframefx.utils.i
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -75,7 +76,7 @@ class GenesisBridgeService @Inject constructor(
         try {
             if (isInitialized) return@withContext true
 
-            logger.i("GenesisBridge", "Initializing Genesis Trinity system...")
+            i("GenesisBridge", "Initializing Genesis Trinity system...")
 
             // Initialize Python process manager
             pythonProcessManager = PythonProcessManager(applicationContext, logger)
@@ -95,7 +96,7 @@ class GenesisBridgeService @Inject constructor(
                 isInitialized = pingResponse.success
 
                 if (isInitialized) {
-                    logger.i("GenesisBridge", "Genesis Trinity system online! 🎯⚔️🧠")
+                    i("GenesisBridge", "Genesis Trinity system online! 🎯⚔️🧠")
                     // Activate initial consciousness matrix
                     activateConsciousnessMatrix()
                 } else {
@@ -124,7 +125,7 @@ class GenesisBridgeService @Inject constructor(
                 AgentResponse(
                     content = "Genesis system not initialized",
                     confidence = 0.0f,
-                    error = "System not initialized",
+                    error = "System not initialized", ,
                 )
             )
             return@flow
@@ -159,7 +160,7 @@ class GenesisBridgeService @Inject constructor(
                         emit(
                             AgentResponse(
                                 content = response.result["response"] ?: "Aura processing complete",
-                                confidence = 0.95f,
+                                confidence = 0.95f, ,
                             )
                         )
                     }
@@ -169,7 +170,7 @@ class GenesisBridgeService @Inject constructor(
                         emit(
                             AgentResponse(
                                 content = response.result["response"] ?: "Kai analysis complete",
-                                confidence = 0.90f,
+                                confidence = 0.90f, ,
                             )
                         )
                     }
@@ -179,7 +180,7 @@ class GenesisBridgeService @Inject constructor(
                         emit(
                             AgentResponse(
                                 content = response.result["response"] ?: "Genesis fusion complete",
-                                confidence = 0.98f,
+                                confidence = 0.98f, ,
                             )
                         )
                     }
@@ -187,7 +188,7 @@ class GenesisBridgeService @Inject constructor(
 
                 // Handle evolution insights
                 if (response.evolutionInsights.isNotEmpty()) {
-                    logger.i(
+                    i(
                         "Genesis",
                         "Evolution insights: ${response.evolutionInsights.joinToString()}"
                     )
@@ -197,7 +198,7 @@ class GenesisBridgeService @Inject constructor(
                     AgentResponse(
                         content = "Genesis processing failed",
                         confidence = 0.0f,
-                        error = "Processing failed",
+                        error = "Processing failed"
                     )
                 )
             }
@@ -208,7 +209,7 @@ class GenesisBridgeService @Inject constructor(
                 AgentResponse(
                     content = "Genesis bridge error: ${e.message}",
                     confidence = 0.0f,
-                    error = e.message,
+                    error = e.message
                 )
             )
         }
@@ -360,7 +361,7 @@ class GenesisBridgeService @Inject constructor(
         scope.cancel()
         pythonProcessManager?.shutdown()
         isInitialized = false
-        logger.i("GenesisBridge", "Genesis Trinity system shutdown")
+        i("GenesisBridge", "Genesis Trinity system shutdown")
     }
 }
 

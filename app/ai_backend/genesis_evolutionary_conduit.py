@@ -216,7 +216,33 @@ class EvolutionaryConduit:
                 Expected to include 'title' (str) for human-readable identification; other proposal fields may be present and
                 will be used by the implementation.
         """
-        logger.info(f"✨ Implementing evolution: {proposal.get('title', 'Unknown')}")
+        with self._lock:
+            proposal_id = proposal.get('proposal_id')
+            logger.info(f"✨ Implementing evolution: {proposal.get('title', 'Unknown')}")
+            
+            # Apply proposed changes to current profile
+            proposed_changes = proposal.get('proposed_changes', {})
+            for key_path, new_value in proposed_changes.items():
+                # Navigate nested dict structure (e.g., "personality.verbosity")
+                keys = key_path.split('.')
+                target = self.current_profile
+                
+                for key in keys[:-1]:
+                    if key not in target:
+                        target[key] = {}
+                    target = target[key]
+                
+                # Apply the change
+                target[keys[-1]] = new_value
+                logger.debug(f"Applied change: {key_path} = {new_value}")
+            
+            # Mark proposal as implemented
+            if proposal_id in self.active_proposals:
+                self.active_proposals[proposal_id].implementation_status = "implemented"
+                self.implemented_changes.append(proposal)
+                del self.active_proposals[proposal_id]
+            
+            logger.info(f"✅ Evolution implemented: {len(proposed_changes)} changes applied")
 
     async def get_status(self) -> Dict[str, Any]:
         """

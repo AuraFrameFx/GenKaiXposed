@@ -5,13 +5,14 @@ import dev.aurakai.auraframefx.ai.agents.Agent
 import dev.aurakai.auraframefx.ai.context.ContextManager
 import dev.aurakai.auraframefx.ai.error.ErrorHandler
 import dev.aurakai.auraframefx.ai.memory.MemoryManager
-import dev.aurakai.auraframefx.ai.task.TaskScheduler
-import dev.aurakai.auraframefx.ai.task.execution.TaskExecutionManager
-import dev.aurakai.auraframefx.utils.AuraFxLogger
-import dev.aurakai.auraframefx.oracledrive.genesis.cloud.CloudStatusMonitor
 import dev.aurakai.auraframefx.models.AgentResponse
 import dev.aurakai.auraframefx.models.AgentType
 import dev.aurakai.auraframefx.models.AiRequest
+import dev.aurakai.auraframefx.oracledrive.genesis.cloud.CloudStatusMonitor
+import dev.aurakai.auraframefx.task.TaskExecutionManager
+import dev.aurakai.auraframefx.task.TaskScheduler
+import dev.aurakai.auraframefx.utils.AuraFxLogger
+import dev.aurakai.auraframefx.utils.i
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
@@ -116,7 +117,7 @@ class ClaudeAIService @Inject constructor(
         request: AiRequest,
         context: String,
     ): AgentResponse {
-        AuraFxLogger.i(
+        i(
             "ClaudeAIService",
             "Processing request with systematic analysis: ${request.query}"
         )
@@ -305,7 +306,7 @@ class ClaudeAIService @Inject constructor(
     fun clearCache() {
         synchronized(responseCache) {
             responseCache.clear()
-            AuraFxLogger.i("ClaudeAIService", "Response cache cleared")
+            i("ClaudeAIService", "Response cache cleared")
         }
     }
 }

@@ -2,8 +2,8 @@ package dev.aurakai.auraframefx.oracledrive.genesis.ai
 
 import android.content.Context
 import dev.aurakai.auraframefx.ai.context.ContextManager
-import dev.aurakai.auraframefx.models.AiRequest
 import dev.aurakai.auraframefx.models.AgentResponse
+import dev.aurakai.auraframefx.models.AiRequest
 import dev.aurakai.auraframefx.network.KtorClient
 import dev.aurakai.auraframefx.network.NetworkResponse
 import dev.aurakai.auraframefx.network.safeApiCall

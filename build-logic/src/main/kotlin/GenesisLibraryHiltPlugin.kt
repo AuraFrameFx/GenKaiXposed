@@ -16,11 +16,12 @@ import org.gradle.kotlin.dsl.configure
  * - KSP annotation processing for Hilt
  *
  * Plugin Application Order:
- * 1. com.android.library (Kotlin is built-in with AGP 9.0+)
- * 2. org.jetbrains.kotlin.plugin.compose
- * 3. com.google.dagger.hilt.android (HILT - only in this variant)
- * 4. com.google.devtools.ksp (KSP - only in this variant)
- * 5. org.jetbrains.kotlin.plugin.serialization
+ * 1. org.jetbrains.kotlin.android (Required for Hilt even with built-in Kotlin)
+ * 2. com.android.library
+ * 3. org.jetbrains.kotlin.plugin.compose
+ * 4. com.google.dagger.hilt.android (HILT - only in this variant)
+ * 5. com.google.devtools.ksp (KSP - only in this variant)
+ * 6. org.jetbrains.kotlin.plugin.serialization
  *
  * Usage:
  * plugins {
@@ -40,15 +41,17 @@ class GenesisLibraryHiltPlugin : Plugin<Project> {
      */
     override fun apply(project: Project) {
         with(project) {
-            // Apply plugins in correct order
-            // CRITICAL: Hilt requires explicit Kotlin Android plugin even with built-in Kotlin
-            // See: https://github.com/google/dagger/issues/4049
-            pluginManager.apply("org.jetbrains.kotlin.android")  // Required for Hilt!
+            // Apply core plugins. Android must be first.
             pluginManager.apply("com.android.library")
+            pluginManager.apply("org.jetbrains.kotlin.android")
             pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
-            pluginManager.apply("com.google.dagger.hilt.android")  // ← HILT PLUGIN
-            pluginManager.apply("com.google.devtools.ksp")         // ← KSP FOR HILT
             pluginManager.apply("org.jetbrains.kotlin.plugin.serialization")
+
+            // Apply dependent plugins only after the Android plugin has been configured.
+            plugins.withId("com.android.library") {
+                pluginManager.apply("com.google.dagger.hilt.android")
+                pluginManager.apply("com.google.devtools.ksp")
+            }
 
             extensions.configure<LibraryExtension> {
                 compileSdk = 36

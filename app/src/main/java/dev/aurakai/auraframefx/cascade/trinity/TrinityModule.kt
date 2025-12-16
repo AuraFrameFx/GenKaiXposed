@@ -1,4 +1,4 @@
-package dev.aurakai.auraframefx.di
+package dev.aurakai.auraframefx.cascade.trinity
 
 import android.content.Context
 import dagger.Module
@@ -7,14 +7,15 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.aurakai.auraframefx.ai.clients.VertexAIClient
+import dev.aurakai.auraframefx.ai.context.ContextManager
 import dev.aurakai.auraframefx.ai.services.AuraAIService
-import dev.aurakai.auraframefx.ai.services.GenesisBridgeService
 import dev.aurakai.auraframefx.ai.services.KaiAIService
-import dev.aurakai.auraframefx.ai.services.TrinityCoordinatorService
-import dev.aurakai.auraframefx.context.ContextManager
 import dev.aurakai.auraframefx.data.logging.AuraFxLogger
+import dev.aurakai.auraframefx.oracledrive.genesis.ai.services.DefaultAuraAIService
+import dev.aurakai.auraframefx.oracledrive.genesis.ai.services.GenesisBridgeService
 import dev.aurakai.auraframefx.security.SecurityContext
 import dev.aurakai.auraframefx.security.SecurityMonitor
+import dev.aurakai.auraframefx.services.DefaultKaiAIService
 import javax.inject.Singleton
 
 /**
@@ -28,6 +29,18 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object TrinityModule {
+
+    @Provides
+    @Singleton
+    fun provideAuraAIService(): AuraAIService {
+        return DefaultAuraAIService()
+    }
+
+    @Provides
+    @Singleton
+    fun provideKaiAIService(): KaiAIService {
+        return DefaultKaiAIService()
+    }
 
     /**
      * Provides a singleton instance of GenesisBridgeService that integrates multiple AI services with the Trinity Python backend.
@@ -98,4 +111,3 @@ object TrinityModule {
         )
     }
 }
-

@@ -229,14 +229,79 @@ fun toggleModule(packageName: String, enable: Boolean): Boolean
         /**
          * Convert an Android `IBinder` from the bound service into an `IOracleDriveService` instance.
          *
-         * This function is currently a placeholder and always returns `null`; it is intended to perform
-         * the AIDL binder-to-interface conversion once implemented.
+         * This implements the AIDL stub pattern for service binding.
          *
          * @param binder The `IBinder` obtained from the service connection, or `null`.
-         * @return An `IOracleDriveService` if the binder can be converted, `null` otherwise (currently always `null`).
+         * @return An `IOracleDriveService` if the binder can be converted, `null` otherwise.
          */
         fun asInterface(binder: IBinder?): IOracleDriveService? {
-            return null // TODO: Implement AIDL binding
+            if (binder == null) return null
+
+            // Try to cast to local implementation first
+            val localImpl = binder.queryLocalInterface(DESCRIPTOR)
+            if (localImpl != null && localImpl is IOracleDriveService) {
+                return localImpl
+            }
+
+            // Return proxy for remote service
+            return Proxy(binder)
+        }
+
+        private const val DESCRIPTOR = "dev.aurakai.auraframefx.oracledrive.IOracleDriveService"
+    }
+
+    /**
+     * Proxy implementation for remote IOracleDriveService binding.
+     */
+    private class Proxy(private val remote: IBinder) : IOracleDriveService {
+        override fun getStatus(): String? {
+            val data = android.os.Parcel.obtain()
+            val reply = android.os.Parcel.obtain()
+            return try {
+                data.writeInterfaceToken(Stub.DESCRIPTOR)
+                remote.transact(TRANSACTION_getStatus, data, reply, 0)
+                reply.readException()
+                reply.readString()
+            } finally {
+                reply.recycle()
+                data.recycle()
+            }
+        }
+
+        override fun getDetailedStatus(): String? {
+            val data = android.os.Parcel.obtain()
+            val reply = android.os.Parcel.obtain()
+            return try {
+                data.writeInterfaceToken(Stub.DESCRIPTOR)
+                remote.transact(TRANSACTION_getDetailedStatus, data, reply, 0)
+                reply.readException()
+                reply.readString()
+            } finally {
+                reply.recycle()
+                data.recycle()
+            }
+        }
+
+        override fun toggleModule(packageName: String, enable: Boolean): Boolean {
+            val data = android.os.Parcel.obtain()
+            val reply = android.os.Parcel.obtain()
+            return try {
+                data.writeInterfaceToken(Stub.DESCRIPTOR)
+                data.writeString(packageName)
+                data.writeInt(if (enable) 1 else 0)
+                remote.transact(TRANSACTION_toggleModule, data, reply, 0)
+                reply.readException()
+                reply.readInt() != 0
+            } finally {
+                reply.recycle()
+                data.recycle()
+            }
+        }
+
+        companion object {
+            private const val TRANSACTION_getStatus = IBinder.FIRST_CALL_TRANSACTION
+            private const val TRANSACTION_getDetailedStatus = IBinder.FIRST_CALL_TRANSACTION + 1
+            private const val TRANSACTION_toggleModule = IBinder.FIRST_CALL_TRANSACTION + 2
         }
     }
 }

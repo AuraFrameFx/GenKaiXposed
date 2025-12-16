@@ -1,4 +1,4 @@
-﻿package dev.aurakai.auraframefx.viewmodel
+﻿package dev.aurakai.auraframefx.oracledrive.genesis.ai
 
 import AgentPriority
 import androidx.lifecycle.ViewModel
@@ -76,7 +76,7 @@ class GenesisAgentViewModel @Inject constructor(
         )
         _agents.value = defaultAgents
 
-        // Initialize agent statuses  
+        // Initialize agent statuses
         val initialStatuses = mutableMapOf<AgentType, String>()
         val agentTypeMap = mapOf(
             "Genesis" to AgentType.GENESIS,

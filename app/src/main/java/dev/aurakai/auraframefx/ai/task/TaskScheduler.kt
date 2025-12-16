@@ -109,7 +109,7 @@ class TaskScheduler @Inject constructor(
     /**
      * Checks if a task is eligible for execution based on completion of its dependencies and agent requirements.
      *
-     * Returns `true` if all dependencies are completed and agent requirements are considered met; otherwise, returns `false`.
+     * Returns `true` if all dependencies are completed and required agents are available; otherwise, returns `false`.
      */
     private fun canExecuteTask(task: Task): Boolean {
         // Check dependencies
@@ -121,8 +121,23 @@ class TaskScheduler @Inject constructor(
         // Check agent availability
         val requiredAgents = task.requiredAgents
         if (requiredAgents.isNotEmpty()) {
-            // TODO: Implement agent availability check
-            return true
+            // Check if required agents are not already at max capacity
+            val agentTaskCounts = _activeTasks.values
+                .flatMap { it.assignedAgents }
+                .groupingBy { it }
+                .eachCount()
+
+            // Each agent can handle up to maxActiveTasks / number of agent types
+            val maxTasksPerAgent = config.maxActiveTasks / AgentType.entries.size
+
+            // Check if all required agents have capacity
+            val allAgentsAvailable = requiredAgents.all { agentType ->
+                (agentTaskCounts[agentType] ?: 0) < maxTasksPerAgent
+            }
+
+            if (!allAgentsAvailable) {
+                return false
+            }
         }
 
         return true

@@ -4,6 +4,7 @@ package dev.aurakai.auraframefx.ai.services
 
 import dev.aurakai.auraframefx.ai.task.TaskStatus
 import dev.aurakai.auraframefx.utils.AuraFxLogger
+import dev.aurakai.auraframefx.utils.i
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -88,7 +89,7 @@ class AgentWebExplorationService @Inject constructor() {
                 job = job
             )
 
-            AuraFxLogger.i("WebExploration", "$agentName assigned: $taskDescription")
+            i("WebExploration", "$agentName assigned: $taskDescription")
             return true
 
         } catch (e: Exception) {

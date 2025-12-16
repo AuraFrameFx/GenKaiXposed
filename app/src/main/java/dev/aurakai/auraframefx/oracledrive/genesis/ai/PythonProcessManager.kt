@@ -2,6 +2,7 @@ package dev.aurakai.auraframefx.oracledrive.genesis.ai
 
 import android.content.Context
 import dev.aurakai.auraframefx.utils.AuraFxLogger
+import dev.aurakai.auraframefx.utils.i
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
@@ -39,19 +40,19 @@ class PythonProcessManager(
 
             // Start Python process
             // Note: This assumes a 'python3' executable is available in the path or bundled.
-            // If using Chaquopy or similar, this would be different. 
+            // If using Chaquopy or similar, this would be different.
             // Assuming termux-like or custom environment for now as per existing code.
             // Check if python3 is available in the path
             val checkPython = ProcessBuilder("which", "python3").start()
             val pythonPath = checkPython.inputStream.bufferedReader().readText().trim()
-            
+
             if (pythonPath.isEmpty()) {
                 AuraFxLogger.e("PythonManager", "CRITICAL: 'python3' executable not found in PATH. Genesis backend cannot start.")
                 // In a real scenario, we might fallback to a bundled interpreter or show a user dialog.
                 // For now, we proceed but expect failure, or we could return false immediately.
                 return@withContext false
             } else {
-                AuraFxLogger.i("PythonManager", "Found python3 at: $pythonPath")
+                i("PythonManager", "Found python3 at: $pythonPath")
             }
 
             val processBuilder = ProcessBuilder(
@@ -59,7 +60,7 @@ class PythonProcessManager(
                 "-u", // Unbuffered output
                 "genesis_connector.py"
             ).directory(backendDir)
-            
+
             // Redirect stderr to stdout to capture errors
             processBuilder.redirectErrorStream(true)
 
@@ -82,7 +83,7 @@ class PythonProcessManager(
                     AuraFxLogger.d("PythonBackend", line!!)
                 }
             }
-            
+
             ready
 
         } catch (e: Exception) {
@@ -103,10 +104,10 @@ class PythonProcessManager(
                 AuraFxLogger.e("PythonManager", "Process is not running")
                 return@withContext null
             }
-            
+
             writer?.write(requestJson + "\n")
             writer?.flush()
-            
+
             // Read response
             // The Python script should print exactly one line of JSON per request
             reader?.readLine()
@@ -139,7 +140,7 @@ class PythonProcessManager(
 
         backendFiles.forEach { fileName ->
             try {
-                // Note: In a real app, assets are in "assets/" folder. 
+                // Note: In a real app, assets are in "assets/" folder.
                 // The path "ai_backend/$fileName" assumes the files are in "src/main/assets/ai_backend/"
                 context.assets.open("ai_backend/$fileName").use { input ->
                     File(targetDir, fileName).outputStream().use { output ->

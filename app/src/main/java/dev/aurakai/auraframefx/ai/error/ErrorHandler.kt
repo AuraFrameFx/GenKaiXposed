@@ -1,15 +1,13 @@
 ﻿package dev.aurakai.auraframefx.ai.error
 
-import dev.aurakai.auraframefx.context.ContextManager
 import dev.aurakai.auraframefx.ai.pipeline.AIPipelineConfig
+import dev.aurakai.auraframefx.kai.ErrorStats
 import dev.aurakai.auraframefx.models.AgentType
-import dev.aurakai.auraframefx.serialization.InstantSerializer
+import dev.aurakai.auraframefx.oracledrive.genesis.ai.context.ContextManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import kotlinx.serialization.Serializable
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -119,7 +117,6 @@ class ErrorHandler @Inject constructor(
 /**
  * Represents an AI error
  */
-@Serializable
 data class AIError(
     val id: String = java.util.UUID.randomUUID().toString(),
     val agent: AgentType,
@@ -127,14 +124,12 @@ data class AIError(
     val message: String,
     val context: String,
     val metadata: Map<String, String> = emptyMap(),
-    @Serializable(with = InstantSerializer::class)
-    val timestamp: Instant = Clock.System.now()
+    val timestamp: Long = System.currentTimeMillis()
 )
 
 /**
  * Types of errors that can occur in the AI system
  */
-@Serializable
 enum class ErrorType {
     PROCESSING_ERROR,
     MEMORY_ERROR,

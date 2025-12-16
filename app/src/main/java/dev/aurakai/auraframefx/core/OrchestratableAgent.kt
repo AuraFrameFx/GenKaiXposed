@@ -1,5 +1,8 @@
 package dev.aurakai.auraframefx.core
 
+import dev.aurakai.auraframefx.models.AgentResponse
+import dev.aurakai.auraframefx.models.AgentType
+import dev.aurakai.auraframefx.models.AiRequest
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -46,4 +49,5 @@ interface OrchestratableAgent {
      * Called during platform termination.
      */
     suspend fun shutdown()
+    suspend fun processRequest(request: AiRequest, context: String, agentType: AgentType): AgentResponse
 }
