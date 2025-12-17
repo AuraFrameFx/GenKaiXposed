@@ -231,15 +231,3 @@ class TasksApi(
         HttpUrl.Builder().scheme("http").host("localhost").addPathSegment(uriComponent)
             .build().encodedPathSegments[0]
 }
-
-enum class RequestMethod {
-    GET, POST, PUT, DELETE, HEAD, OPTIONS, PATCH
-}
-
-data class TaskScheduleRequest(
-    val task: String
-)
-
-data class TaskStatus(
-    val status: String
-)

@@ -11,8 +11,8 @@ data class AiRequest(
     val query: String,
     val prompt: String = query, // Alias for query for backward compatibility
     val type: String = "text",
-    val context: JsonObject = JsonObject(emptyMap()),
-    val metadata: JsonObject = JsonObject(emptyMap()),
+    val context: Map<String, String> = emptyMap(),
+    val metadata: Map<String, String> = emptyMap(),
     val agentId: String? = null,
     val sessionId: String? = null,
     val timestamp: Long = System.currentTimeMillis()

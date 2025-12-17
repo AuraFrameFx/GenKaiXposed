@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * Interface representing an AI agent.
  */
-interface Agent {
+internal interface Agent {
     /**
      * Returns the name of the agent.
      */
