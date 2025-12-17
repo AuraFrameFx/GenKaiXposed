@@ -11,9 +11,10 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 abstract class LoggerModule {
 
-    context(defaultAuraFxLogger: DefaultAuraFxLogger) @Binds
-    @Singleton
-    abstract fun bindAuraFxLogger(): AuraFxLogger
 }
 
 class DefaultAuraFxLogger
+
+context(defaultAuraFxLogger: DefaultAuraFxLogger) @Binds
+@Singleton
+fun bindAuraFxLogger(): AuraFxLogger
