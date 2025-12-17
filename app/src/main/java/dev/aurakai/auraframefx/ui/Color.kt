@@ -3,28 +3,11 @@ package dev.aurakai.auraframefx.ui
 import androidx.compose.ui.graphics.Color
 
 // Primary Colors - Enhanced Neon Palette
-// NOTE: NeonTeal, NeonPurple, NeonPink, NeonCyan moved to Theme.kt for consistency
-// Provide deprecated legacy aliases that reference the theme values to avoid
-// duplicate simple-name imports and keep backward compatibility.
-
-import dev.aurakai.auraframefx.ui.theme.NeonBlue as ThemeNeonBlue
-import dev.aurakai.auraframefx.ui.theme.NeonPurple as ThemeNeonPurple
-import dev.aurakai.auraframefx.ui.theme.NeonPink as ThemeNeonPink
-import dev.aurakai.auraframefx.ui.theme.NeonCyan as ThemeNeonCyan
-
-@Deprecated("Use dev.aurakai.auraframefx.ui.theme.NeonPurple instead", level = DeprecationLevel.WARNING)
-val NeonPurpleLegacy: Color = ThemeNeonPurple
-
-// Legacy NeonBlue in root `ui` package. Prefer `dev.aurakai.auraframefx.ui.theme.NeonBlue`.
-@Deprecated("Use dev.aurakai.auraframefx.ui.theme.NeonBlue instead", level = DeprecationLevel.WARNING)
-val NeonBlueLegacy: Color = ThemeNeonBlue // Bright cyan for highlights
-
-// Keep a small set of package-local legacy names (distinct) to avoid duplicate/simple-name collisions
-@Deprecated("Use dev.aurakai.auraframefx.ui.theme.NeonPink instead", level = DeprecationLevel.WARNING)
-val NeonPinkLegacy: Color = ThemeNeonPink
-
-@Deprecated("Use dev.aurakai.auraframefx.ui.theme.NeonCyan instead", level = DeprecationLevel.WARNING)
-val NeonCyanLegacy: Color = ThemeNeonCyan
+val NeonTeal = Color(0xFF00FFCC)
+val NeonPurple = Color(0xFFE000FF)
+val NeonPink = Color(0xFFFF00FF)
+val NeonCyan = Color(0xFF00FFFF)
+val NeonBlue = Color(0xFF00BFFF)
 
 // Other local colors remain defined here (these are not moved to theme)
 val NeonGreen = Color(0xFF00FF00) // Bright neon green
