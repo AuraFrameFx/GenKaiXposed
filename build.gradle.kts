@@ -42,11 +42,11 @@ allprojects {
         resolutionStrategy {
             // Force Kotlin stdlib to 2.3.0-RC2 (prevent transitive downgrades)
             force(
-                "org.jetbrains.kotlin:kotlin-stdlib:2.3.0-RC2",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.0-RC2",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.0-RC2",
-                "org.jetbrains.kotlin:kotlin-stdlib-common:2.3.0-RC2",
-                "org.jetbrains.kotlin:kotlin-reflect:2.3.0-RC2"
+                "org.jetbrains.kotlin:kotlin-stdlib:2.3.0",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.0",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.0",
+                "org.jetbrains.kotlin:kotlin-stdlib-common:2.3.0",
+                "org.jetbrains.kotlin:kotlin-reflect:2.3.0"
             )
 
             // Force Coroutines to 1.10.2 (prevent transitive downgrades)
