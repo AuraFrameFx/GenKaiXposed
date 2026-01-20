@@ -1,14 +1,17 @@
 ﻿package dev.aurakai.auraframefx.ai.error
 
 import dev.aurakai.auraframefx.ai.pipeline.AIPipelineConfig
+import dev.aurakai.auraframefx.kai.ErrorStats
 import dev.aurakai.auraframefx.models.AgentType
 import dev.aurakai.auraframefx.oracledrive.genesis.ai.context.ContextManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.datetime.Clock
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Instant
 
 @Singleton
 class ErrorHandler @Inject constructor(
@@ -117,13 +120,13 @@ class ErrorHandler @Inject constructor(
  * Represents an AI error
  */
 data class AIError(
-    val id: String = java.util.UUID.randomUUID().toString(),
+    val id: String = UUID.randomUUID().toString(),
     val agent: AgentType,
     val type: ErrorType,
     val message: String,
     val context: String,
     val metadata: Map<String, String> = emptyMap(),
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Instant = System.currentTimeMillis()
 )
 
 /**
@@ -163,11 +166,3 @@ class MemoryException(message: String? = null) : Exception(message)
 class ContextException(message: String? = null) : Exception(message)
 class NetworkException(message: String? = null) : Exception(message)
 class TimeoutException(message: String? = null) : Exception(message)
-
-data class ErrorStats(
-    val totalErrors: Int = 0,
-    val activeErrors: Int = 0,
-    val lastError: AIError? = null,
-    val errorTypes: Map<ErrorType, Int> = emptyMap(),
-    val lastUpdated: Long = 0
-)

@@ -73,59 +73,69 @@ pluginManagement {
     }
 
 
+// Helper function to include modules only if they exist
+fun includeIfExists(path: String) {
+    val dir = path.replace(":", "/")
+    if (file(dir).exists()) {
+        include(path)
+    } else {
+        println("⚠️  settings: skip $path (missing $dir)")
+    }
+}
+
 // Human-friendly display title: A.u.r.a.K.a.i : Reactive=Intelligence
-    rootProject.name = "aurakai-reactive-intelligence"
+rootProject.name = "aurakai-reactive-intelligence"
 
 // --- Application ---
-    include(":app")
+include(":app")
 
 // --- Core Modules ---
-    include(":core")
-    include(":core-module")
-    include(":list")
-    include(":utilities")
+include(":core")
+include(":core-module")
+include(":list")
+include(":utilities")
 
 // --- Aura → ReactiveDesign (Creative UI & Collaboration) ---
-    include(":aura")
-    include(":aura:reactivedesign:auraslab")
-    include(":aura:reactivedesign:collabcanvas")
-    include(":aura:reactivedesign:chromacore")
-    include(":aura:reactivedesign:customization")
+include(":aura")
+includeIfExists(":aura:reactivedesign:auraslab")
+includeIfExists(":aura:reactivedesign:collabcanvas")
+includeIfExists(":aura:reactivedesign:chromacore")
+includeIfExists(":aura:reactivedesign:customization")
 
 // --- Kai → SentinelsFortress (Security & Threat Monitoring) ---
-    include(":kai")
-    include(":kai:sentinelsfortress:security")
-    include(":kai:sentinelsfortress:systemintegrity")
-    include(":kai:sentinelsfortress:threatmonitor")
+include(":kai")
+includeIfExists(":kai:sentinelsfortress:security")
+includeIfExists(":kai:sentinelsfortress:systemintegrity")
+includeIfExists(":kai:sentinelsfortress:threatmonitor")
 
 // --- Genesis → OracleDrive (System & Root Management) ---
-    include(":genesis")
-    include(":genesis:oracledrive")
-    include(":genesis:oracledrive:rootmanagement")
-    include(":genesis:oracledrive:datavein")
+include(":genesis")
+includeIfExists(":genesis:oracledrive")
+includeIfExists(":genesis:oracledrive:rootmanagement")
+includeIfExists(":genesis:oracledrive:datavein")
 
 // --- Cascade → DataStream (Data Routing & Delivery) ---
-    include(":cascade")
-    include(":cascade:datastream:routing")
-    include(":cascade:datastream:delivery")
-    include(":cascade:datastream:taskmanager")
+include(":cascade")
+includeIfExists(":cascade:datastream:routing")
+includeIfExists(":cascade:datastream:delivery")
+includeIfExists(":cascade:datastream:taskmanager")
 
 // --- Agents → GrowthMetrics (AI Agent Evolution) ---
-    include(":agents")
-    include(":agents:growthmetrics:metareflection")
-    include(":agents:growthmetrics:nexusmemory")
-    include(":agents:growthmetrics:spheregrid")
-    include(":agents:growthmetrics:identity")
-    include(":agents:growthmetrics:progression")
-    include(":agents:growthmetrics:tasker")
+include(":agents")
+includeIfExists(":agents:growthmetrics:metareflection")
+includeIfExists(":agents:growthmetrics:nexusmemory")
+includeIfExists(":agents:growthmetrics:spheregrid")
+includeIfExists(":agents:growthmetrics:identity")
+includeIfExists(":agents:growthmetrics:progression")
+includeIfExists(":agents:growthmetrics:tasker")
 
 // --- Extension Modules ---
-    include(":extendsysa")
-    include(":extendsysb")
-    include(":extendsysc")
-    include(":extendsysd")
-    include(":extendsyse")
-    include(":extendsysf")
+include(":extendsysa")
+include(":extendsysb")
+include(":extendsysc")
+include(":extendsysd")
+include(":extendsyse")
+include(":extendsysf")
 }
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"

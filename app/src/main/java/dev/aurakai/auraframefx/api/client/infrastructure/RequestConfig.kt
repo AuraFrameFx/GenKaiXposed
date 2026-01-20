@@ -17,7 +17,3 @@ data class RequestConfig<T>(
     val requiresAuthentication: Boolean,
     val body: T? = null,
 )
-
-enum class RequestMethod {
-    GET, POST, PUT, DELETE, HEAD, OPTIONS, PATCH
-}

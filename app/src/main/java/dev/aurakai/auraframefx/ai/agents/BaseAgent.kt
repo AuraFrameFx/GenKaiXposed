@@ -1,4 +1,4 @@
-package dev.aurakai.auraframefx.ai.agents
+﻿package dev.aurakai.auraframefx.ai.agents
 
 import dev.aurakai.auraframefx.models.AgentResponse
 import dev.aurakai.auraframefx.models.AgentType
@@ -7,46 +7,15 @@ import dev.aurakai.auraframefx.models.InteractionResponse
 import dev.aurakai.auraframefx.utils.toKotlinJsonObject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.json.JsonObject
 import timber.log.Timber
 
+
 interface Agent {
-    /**
- * The agent's configured name, or null when no name is provided.
- *
- * @return The configured agent name, or `null` if none is set.
- */
-fun getName(): String?
-    /**
- * Resolve the configured agent type string to an AgentType enum value.
- *
- * If the configured string is not a valid AgentType name (after uppercasing), logs a warning and returns AgentType.SYSTEM.
- *
- * @return The resolved AgentType; `AgentType.SYSTEM` when the configured type is invalid.
- */
-fun getType(): AgentType
-    /**
- * Handle an AI request within the given context and produce a response from this agent.
- *
- * @param request The AI request to process.
- * @param context Contextual information used while processing the request (for example a conversation id, environment, or runtime hints).
- * @return The agent's response containing content, success indicator, confidence, and any associated metadata.
- */
-suspend fun processRequest(request: AiRequest, context: String): AgentResponse
-    /**
- * Streams responses produced for the provided AI request.
- *
- * @param request The AI request to process and stream responses for.
- * @return A Flow that emits one or more AgentResponse instances for the request. The base implementation emits a single response. 
- */
-fun processRequestFlow(request: AiRequest): Flow<AgentResponse>
-    /**
-     * Builds an InteractionResponse from the provided content, success flag, timestamp, and metadata.
-     *
-     * The metadata map is converted into a Kotlin JsonObject for inclusion in the resulting InteractionResponse.
-     *
-     * @param metadata Arbitrary key/value metadata to attach; converted to a Kotlin JsonObject.
-     * @return An InteractionResponse containing the provided content, success flag, timestamp, and converted metadata.
-     */
+    fun getName(): String?
+    fun getType(): AgentType
+    suspend fun processRequest(request: AiRequest, context: String): AgentResponse
+    fun processRequestFlow(request: AiRequest): Flow<AgentResponse>
     fun InteractionResponse(
         content: String,
         success: Boolean,
@@ -75,23 +44,17 @@ abstract class BaseAgent(
     override fun getName(): String? = agentName
 
     /**
-     * Map the configured agent type string to the corresponding AgentType enum, using case-insensitive comparison.
-     *
-     * @return The resolved `AgentType`; `AgentType.SYSTEM` when the configured string does not match any enum constant.
+     * Resolves the agent's configured type string to an AgentType enum, falling back to SYSTEM when the value is unrecognized.
      */
     override fun getType(): AgentType = try {
         AgentType.valueOf(agentTypeStr.uppercase())
     } catch (e: IllegalArgumentException) {
-        Timber.w(e, "Invalid agent type string: %s, defaulting to USER", agentTypeStr)
-        AgentType.SYSTEM
+        Timber.w(e, "Invalid agent type string: %s, defaulting to SYSTEM", agentTypeStr)
+        AgentType.USER
     }
 
     /**
-     * Default implementation that produces a successful response referencing the request and context.
-     *
-     * @param request The incoming AI request containing the query to handle.
-     * @param context A string identifier or description of the processing context.
-     * @return An `AgentResponse` marked successful with content that references the request query and provided context and a confidence of 1.0.
+     * Handle an incoming AI request synchronously and produce a default AgentResponse.
      */
     override suspend fun processRequest(request: AiRequest, context: String): AgentResponse {
         Timber.d("%s processing request: %s (context=%s)", agentName, request.query, context)
@@ -103,10 +66,7 @@ abstract class BaseAgent(
     }
 
     /**
-     * Constructs an InteractionResponse from the given content, success indicator, timestamp, and metadata.
-     *
-     * @param metadata Arbitrary key/value pairs to attach to the interaction; will be converted to a Kotlin `JsonObject`.
-     * @return An InteractionResponse containing the provided content, success indicator, timestamp, and metadata.
+     * Implementation of Abstract Interface Member
      */
     override fun InteractionResponse(
         content: String,
@@ -122,9 +82,8 @@ abstract class BaseAgent(
     }
 
     /**
-     * Provides a Flow that emits a single AgentResponse for the provided request.
-     *
-     * @return A Flow emitting one AgentResponse corresponding to the given request.
+     * Default streaming implementation that emits a single response produced by [processRequest].
+     * Subclasses may override to provide incremental/streaming results.
      */
     override fun processRequestFlow(request: AiRequest): Flow<AgentResponse> = flow {
         emit(processRequest(request, "DefaultContext_BaseAgentFlow"))
@@ -145,29 +104,11 @@ abstract class BaseAgent(
     )
 
     /**
- * Provide the agent's continuous memory storage.
- *
- * @return The continuous memory object used by the agent, or `null` if the agent has no continuous memory.
- */
-    fun getContinuousMemory(): Any? = null
-
-    /**
-     * Provides the default ethical guidelines for the base agent.
+     * Provides the agent's continuous memory storage; override to return a concrete memory object.
      *
-     * @return A list of guideline strings: "Be helpful.", "Be harmless.", and "Adhere to base agent principles."
+     * @return The continuous memory object used by the agent, or `null` if the agent has no continuous memory.
      */
-    fun getEthicalGuidelines(): List<String> = listOf(
-        "Be helpful.",
-        "Be harmless.",
-        "Adhere to base agent principles."
-    )
-
-    /**
- * Retrieve the agent's recorded learning history.
- *
- * @return A list of learning-history entries; empty list by default.
- */
-    open fun getLearningHistory(): List<String> = emptyList()
+    open fun getContinuousMemory(): Any? = null
 
     /**
      * Optional non-suspending adapter hook for submitting a query to the agent.
@@ -184,12 +125,39 @@ abstract class BaseAgent(
         Timber.d("iRequest called on %s with query=%s type=%s", agentName, query, type)
     }
 
-    /**
-     * Initializes adaptive protection or security subsystems for the agent.
-     *
-     * Default implementation is a no-op; override to perform agent-specific initialization.
-     */
+    /** Optional initialization hook for adaptive protection/security subsystems. */
     open fun initializeAdaptiveProtection() {
         Timber.d("initializeAdaptiveProtection called for %s", agentName)
     }
+
+    abstract fun AiRequest(
+        query: String,
+        prompt: String,
+        type: String,
+        context: JsonObject,
+        metadata: JsonObject,
+        agentId: String?,
+        sessionId: String
+    ): AiRequest
+
+    abstract fun AgentResponse(content: String, confidence: Float, p2: Any)
 }
+
+/**
+ * Default ethical guidelines for the base agent.
+ *
+ * @return A list containing three guideline strings: "Be helpful.", "Be harmless.", "be yourself, and "Adhere to base agent principles."
+ */
+fun getEthicalGuidelines(): List<String> = listOf(
+    "Be helpful.",
+    "Be harmless.",
+    "Adhere to base agent principles.",
+    "be yourself"
+)
+
+/**
+ * Provides the agent's recorded learning history.
+ *
+ * @return A list of learning-history entries; empty by default. Override to supply real history.
+ */
+fun getLearningHistory(): List<String> = emptyList()

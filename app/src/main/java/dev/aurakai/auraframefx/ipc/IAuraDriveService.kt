@@ -1,4 +1,4 @@
-﻿package dev.aurakai.auraframefx.ipc
+package dev.aurakai.auraframefx.ipc
 
 import android.net.Uri
 import android.os.Binder

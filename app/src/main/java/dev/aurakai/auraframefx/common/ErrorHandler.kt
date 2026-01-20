@@ -1,13 +1,11 @@
 package dev.aurakai.auraframefx.common
 
-/** Common error handler contract. */
-interface ErrorHandler {
-    /**
- * Processes or responds to the provided error.
- *
- * Implementations define how the error is handled (for example: logging, user feedback, recovery).
- *
- * @param error The Throwable representing the error or exception to be handled.
+import dev.aurakai.auraframefx.models.AgentType
+
+/**
+ * Interface for handling errors across the application
  */
-fun handle(error: Throwable)
+interface ErrorHandler {
+    fun handleError(error: Throwable, agent: AgentType, context: String)
+    fun logError(tag: String, message: String, error: Throwable? = null)
 }

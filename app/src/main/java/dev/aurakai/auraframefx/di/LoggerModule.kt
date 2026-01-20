@@ -13,5 +13,5 @@ abstract class LoggerModule {
 
     @Binds
     @Singleton
-    abstract fun bindAuraFxLogger(defaultAuraFxLogger: DefaultAuraFxLogger): AuraFxLogger
+    abstract fun bindAuraFxLogger(impl: DefaultAuraFxLogger): AuraFxLogger
 }

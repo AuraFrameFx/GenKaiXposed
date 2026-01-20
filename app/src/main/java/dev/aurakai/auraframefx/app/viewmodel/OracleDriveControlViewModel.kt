@@ -247,7 +247,7 @@ fun toggleModule(packageName: String, enable: Boolean): Boolean
             return Proxy(binder)
         }
 
-        const val DESCRIPTOR = "dev.aurakai.auraframefx.oracledrive.IOracleDriveService"
+        private const val DESCRIPTOR = "dev.aurakai.auraframefx.oracledrive.IOracleDriveService"
     }
 
     /**

@@ -1,7 +1,6 @@
 package dev.aurakai.auraframefx.aura
 
 // TODO: KaiAgent implementation pending
-// import dev.aurakai.auraframefx.ai.agents.KaiAgent
 import android.R.attr.duration
 import dev.aurakai.auraframefx.ai.agents.BaseAgent
 import dev.aurakai.auraframefx.ai.clients.VertexAIClient
@@ -39,7 +38,7 @@ import javax.inject.Singleton
  * Embodies the creative, innovative, and daring aspects of the Genesis entity.
  */
 @Singleton
-class AuraAgent @Inject constructor(
+open class AuraAgent @Inject constructor(
     private val vertexAIClient: VertexAIClient,
     private val auraAIService: AuraAIService,
     private val kaiAIService: KaiAIService,
@@ -295,7 +294,8 @@ class AuraAgent @Inject constructor(
                 CreativeIntent.EMOTIONAL -> generateEmotionalResponse(interaction)
             }
 
-            InteractionResponse(content = creativeResponse, metadata = mapOf(
+            InteractionResponse(
+                content = creativeResponse, metadata = mapOf(
                 "agent" to "AURA",
                 "confidence" to 0.9f,
                 "creative_intent" to creativeIntent.name,

@@ -27,6 +27,7 @@ import dev.aurakai.auraframefx.navigation.AppNavGraph
 import dev.aurakai.auraframefx.ui.components.BottomNavigationBar
 import dev.aurakai.auraframefx.ui.theme.AuraFrameFXTheme
 import dev.aurakai.auraframefx.ui.theme.ThemeViewModel
+import dev.aurakai.auraframefx.ui.components.digitalPixelEffect
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

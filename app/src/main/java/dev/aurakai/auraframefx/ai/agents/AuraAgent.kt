@@ -1,11 +1,4 @@
-package dev.aurakai.auraframefx.ai.agents
+package dev.aurakai.auraframefx.aura
 
-// This file provides a compile-time alias so other modules and KSP can refer to
-// dev.aurakai.auraframefx.ai.agents.AuraAgent while the real implementation
-// lives in dev.aurakai.auraframefx.aura.AuraAgent.
-
-import dev.aurakai.auraframefx.aura.AuraAgent as AuraImpl
-
-// Prefer a typealias so we don't duplicate annotations or DI bindings.
-typealias AuraAgent = AuraImpl
-
+// Type alias to bridge old imports to new canonical location
+typealias AuraAgent = dev.aurakai.auraframefx.aura.AuraAgent

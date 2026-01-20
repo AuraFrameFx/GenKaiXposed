@@ -7,7 +7,7 @@ import dev.aurakai.auraframefx.utils.DebugTreeWithClassAndMethod
 import jakarta.inject.Inject
 import timber.log.Timber
 
-class TimberInitializer @Inject constructor() {
+open class TimberInitializer @Inject constructor() {
     fun initialize(application: Application) = if (BuildConfig.DEBUG) {
         Timber.plant(DebugTreeWithClassAndMethod())
         Timber.tag("🧠AuraFrameFX").d("Timber DEBUG mode active")

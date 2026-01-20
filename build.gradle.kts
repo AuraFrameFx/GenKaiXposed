@@ -10,10 +10,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     // Base Kotlin plugins with versions (matching libs.versions.toml)
     // CRITICAL: Use kotlin("android") notation for AGP 9.0 compatibility
-    kotlin("android") version "2.3.0-RC2" apply false
+    kotlin("android") version "2.3.0" apply false
     kotlin("plugin.compose") version "2.3.0-RC2" apply false
     kotlin("plugin.serialization") version "2.3.0-RC2" apply false
-    kotlin("plugin.parcelize") version "2.3.0-RC2" apply false
+    kotlin("plugin.parcelize") version "2.3.0" apply false
 
     // Android plugins
     id("com.android.application") version "9.0.0-beta05" apply false
@@ -21,7 +21,7 @@ plugins {
 
     // Other plugins
     id("com.google.dagger.hilt.android") version "2.57.2" apply false
-    id("com.google.devtools.ksp") version "2.3.3" apply false
+    id("com.google.devtools.ksp") version "2.3.4" apply false
     id("com.google.gms.google-services") version "4.4.4" apply false
     id("com.google.firebase.crashlytics") version "3.0.6" apply false
 }
@@ -42,11 +42,11 @@ allprojects {
         resolutionStrategy {
             // Force Kotlin stdlib to 2.3.0-RC2 (prevent transitive downgrades)
             force(
-                "org.jetbrains.kotlin:kotlin-stdlib:2.3.0-RC2",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.0-RC2",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.0-RC2",
-                "org.jetbrains.kotlin:kotlin-stdlib-common:2.3.0-RC2",
-                "org.jetbrains.kotlin:kotlin-reflect:2.3.0-RC2"
+                "org.jetbrains.kotlin:kotlin-stdlib:2.3.0",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.0",
+                "org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.0",
+                "org.jetbrains.kotlin:kotlin-stdlib-common:2.3.0",
+                "org.jetbrains.kotlin:kotlin-reflect:2.3.0"
             )
 
             // Force Coroutines to 1.10.2 (prevent transitive downgrades)

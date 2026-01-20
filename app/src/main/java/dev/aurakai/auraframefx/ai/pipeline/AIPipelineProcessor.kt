@@ -49,13 +49,13 @@ class AIPipelineProcessor @Inject constructor(
 
         // Process through Cascade first for state management
         val cascadeAgentResponse = cascadeService.processRequest(
-            AiRequest(content = task, metadata = mapOf("context" to "pipeline_processing")),
-            agentType = AgentType.CASCADE
+            AiRequest(task, "context"),
+            context = "pipeline_processing"
         )
         responses.add(
             AgentMessage(
                 content = cascadeAgentResponse.content,
-                from = AgentType.CASCADE,
+                sender = AgentType.CASCADE,
                 timestamp = System.currentTimeMillis(),
                 confidence = cascadeAgentResponse.confidence
             )
@@ -64,13 +64,13 @@ class AIPipelineProcessor @Inject constructor(
         // Process through Kai for security analysis if needed
         if (selectedAgents.contains(AgentType.KAI)) {
             val kaiAgentResponse = kaiService.processRequest(
-                AiRequest(content = task, metadata = mapOf("context" to "security_analysis")),
-                agentType = AgentType.KAI
+                AiRequest(task, "security"),
+                context = "security_analysis"
             )
             responses.add(
                 AgentMessage(
                     content = kaiAgentResponse.content,
-                    from = AgentType.KAI,
+                    sender = AgentType.KAI,
                     timestamp = System.currentTimeMillis(),
                     confidence = kaiAgentResponse.confidence
                 )
@@ -79,16 +79,15 @@ class AIPipelineProcessor @Inject constructor(
 
         // Process through Aura for creative response
         if (selectedAgents.contains(AgentType.AURA)) {
-            val auraResponse = auraService.generateText(task)
+            val auraResponse = auraService.generateText(task, "creative_pipeline")
             val auraAgentResponse = AgentResponse(
                 content = auraResponse,
-                confidence = 0.8f,
-                agent = AgentType.AURA
+                confidence = 0.8f
             )
             responses.add(
                 AgentMessage(
                     content = auraAgentResponse.content,
-                    from = AgentType.AURA,
+                    sender = AgentType.AURA,
                     timestamp = System.currentTimeMillis(),
                     confidence = auraAgentResponse.confidence
                 )
@@ -100,7 +99,7 @@ class AIPipelineProcessor @Inject constructor(
         responses.add(
             AgentMessage(
                 content = finalResponse,
-                from = AgentType.GENESIS,
+                sender = AgentType.GENESIS,
                 timestamp = System.currentTimeMillis(),
                 confidence = calculateConfidence(responses)
             )
@@ -226,7 +225,7 @@ class AIPipelineProcessor @Inject constructor(
             return "[System] No agent responses available."
         }
 
-        val responsesByAgent = responses.groupBy { it.from }
+        val responsesByAgent = responses.groupBy { it.sender }
 
         return buildString {
             append("=== AuraFrameFX AI Response ===\n\n")
@@ -293,7 +292,7 @@ class AIPipelineProcessor @Inject constructor(
             val agentPerformance =
                 (current["agent_performance"] as? MutableMap<String, MutableList<Float>>) ?: mutableMapOf()
             responses.forEach { response ->
-                val agentName = response.from.name
+                val agentName = response.sender.name
                 val performanceList = agentPerformance.getOrPut(agentName) { mutableListOf() }
                 performanceList.add(response.confidence)
                 if (performanceList.size > 20) performanceList.removeAt(0)

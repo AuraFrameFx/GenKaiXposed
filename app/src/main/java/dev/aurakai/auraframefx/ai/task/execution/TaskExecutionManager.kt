@@ -4,7 +4,7 @@ import dev.aurakai.auraframefx.ai.agents.AuraAgent
 import dev.aurakai.auraframefx.ai.agents.GenesisAgent
 import dev.aurakai.auraframefx.ai.agents.KaiAgent
 import dev.aurakai.auraframefx.ai.task.TaskPriority
-import dev.aurakai.auraframefx.models.TaskResult
+import dev.aurakai.auraframefx.ai.task.TaskResult
 import dev.aurakai.auraframefx.kai.ExecutionStatus
 import dev.aurakai.auraframefx.kai.TaskExecution
 import dev.aurakai.auraframefx.models.AgentResponse
@@ -112,7 +112,7 @@ class TaskExecutionManager @Inject constructor(
         )
 
         // Determine optimal agent - update agent field since TaskExecution is immutable
-        val optimalAgent = determineOptimalAgent(execution)
+        val optimalAgent: AgentType = determineOptimalAgent(execution)
         val updatedExecution = execution.copy(agent = optimalAgent)
 
         // Add to queue
@@ -356,7 +356,7 @@ class TaskExecutionManager @Inject constructor(
             type = execution.type,
             context = execution.data.toKotlinJsonObject()
         )
-        return auraAgent.processRequest(request)
+        return auraAgent.processRequest(request, execution.agent)
     }
 
     /**
@@ -373,7 +373,7 @@ class TaskExecutionManager @Inject constructor(
             type = execution.type,
             context = execution.data.toKotlinJsonObject()
         )
-        return kaiAgent.processRequest(request)
+        return kaiAgent.processRequest(request, execution.agent)
     }
 
     /**
@@ -390,7 +390,7 @@ class TaskExecutionManager @Inject constructor(
             type = execution.type,
             context = execution.data.toKotlinJsonObject()
         )
-        return genesisAgent.processRequest(request)
+        return genesisAgent.processRequest(request, "TaskExecution")
     }
 
     /**

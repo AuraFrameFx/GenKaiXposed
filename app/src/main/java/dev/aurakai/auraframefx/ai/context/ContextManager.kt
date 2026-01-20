@@ -20,7 +20,8 @@ class ContextManager @Inject constructor(
     private val memoryManager: MemoryManager,
     private val config: AIPipelineConfig,
 ) {
-    private val _activeContexts = MutableStateFlow<Map<String, ContextChain>>(emptyMap())
+    annotation class enableCreativeMode
+
     val activeContexts: StateFlow<Map<String, ContextChain>> = _activeContexts
 
     private val _contextStats = MutableStateFlow(ContextStats())
@@ -172,21 +173,6 @@ class ContextManager @Inject constructor(
                 longestChain = chains.maxOfOrNull { it.contextHistory.size } ?: 0,
                 lastUpdated = Clock.System.now()
             )
-        }
-    }
-}
-
-private fun ContextManager.current(pair: Pair<String, ContextChain>): Map<String, ContextChain> {
-    val currentMap = activeContexts.value
-    return currentMap + pair
-}
-
-private fun <T> MutableStateFlow<T>.update(function: (T) -> T) {
-    while (true) {
-        val prevValue = value
-        val nextValue = function(prevValue)
-        if (compareAndSet(prevValue, nextValue)) {
-            return
         }
     }
 }

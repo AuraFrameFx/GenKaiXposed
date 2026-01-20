@@ -7,7 +7,7 @@ import kotlinx.serialization.json.buildJsonObject
 @Serializable
 data class InteractionResponse(
     val content: String = "",
-    val success: Boolean = true,
+    val success: JsonObject = true,
     val metadata: JsonObject = buildJsonObject { },
     val timestamp: Long = System.currentTimeMillis()
 )

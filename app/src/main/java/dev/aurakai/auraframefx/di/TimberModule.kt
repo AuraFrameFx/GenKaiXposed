@@ -16,7 +16,11 @@ object TimberModule {
     @Singleton
     fun provideTimberInitializer(app: Application): TimberInitializer {
         val initializer = TimberInitializer()
-        initializer.init(app)
+        init(app)
         return initializer
     }
+}
+
+private fun init(app: Application) {
+    TODO("Not yet implemented")
 }
