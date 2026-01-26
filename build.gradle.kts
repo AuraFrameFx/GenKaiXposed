@@ -20,7 +20,7 @@ plugins {
     id("com.android.library") version "9.0.0-beta05" apply false
 
     // Other plugins
-    id("com.google.dagger.hilt.android") version "2.57.2" apply false
+    id("com.google.dagger.hilt.android") version "2.59" apply false
     id("com.google.devtools.ksp") version "2.3.4" apply false
     id("com.google.gms.google-services") version "4.4.4" apply false
     id("com.google.firebase.crashlytics") version "3.0.6" apply false
@@ -58,9 +58,9 @@ allprojects {
 
             // Force Hilt to 2.57.2
             force(
-                "com.google.dagger:hilt-android:2.57.2",
-                "com.google.dagger:hilt-core:2.57.2",
-                "com.google.dagger:hilt-android-compiler:2.57.2"
+                "com.google.dagger:hilt-android:2.59",
+                "com.google.dagger:hilt-core:2.59",
+                "com.google.dagger:hilt-android-compiler:2.59"
             )
 
             // Prefer modules from libs.versions.toml over transitive dependencies
